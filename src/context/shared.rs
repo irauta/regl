@@ -17,8 +17,7 @@ pub fn new_shared_context() -> SharedContext {
 
 
 impl BindIf<Framebuffer> for SharedContext {
-    fn bind_if(&self, uid: &Id, bind: &Fn())
-    {
+    fn bind_if(&self, uid: &Id, bind: &Fn()) {
         self.current_framebuffer.bind_if(uid, bind)
     }
 }
