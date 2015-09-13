@@ -1,24 +1,23 @@
 
 use ::id::Id;
-use ::ReglError;
 use ::tracker::{SimpleTracker,BindIf};
-use ::framebuffer::{Framebuffer,FramebufferSupport};
+use ::framebuffer::{FramebufferSupport,DrawFramebufferTag};
 use ::buffer::BufferSupport;
 
 pub struct SharedContext {
-    current_framebuffer: SimpleTracker,
+    draw_framebuffer: SimpleTracker,
 }
 
 pub fn new_shared_context() -> SharedContext {
     SharedContext {
-        current_framebuffer: SimpleTracker::new(),
+        draw_framebuffer: SimpleTracker::new(),
     }
 }
 
 
-impl BindIf<Framebuffer> for SharedContext {
+impl BindIf<DrawFramebufferTag> for SharedContext {
     fn bind_if(&self, uid: &Id, bind: &Fn()) {
-        self.current_framebuffer.bind_if(uid, bind)
+        self.draw_framebuffer.bind_if(uid, bind)
     }
 }
 

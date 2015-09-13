@@ -6,9 +6,12 @@ use ::GlId;
 use ::tracker::BindIf;
 use ::resource::ResourceCreationSupport;
 
-pub trait FramebufferSupport : BindIf<Framebuffer> {
+pub trait FramebufferSupport : BindIf<DrawFramebufferTag> {
 
 }
+
+#[allow(dead_code)]
+pub struct DrawFramebufferTag;
 
 pub struct Framebuffer {
     shared_context: Rc<FramebufferSupport>,

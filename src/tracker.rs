@@ -1,7 +1,6 @@
 
 use std::cell::Cell;
 use ::id::{Id,WeakId};
-use ::ReglResult;
 
 pub struct SimpleTracker {
     current: Cell<WeakId>,

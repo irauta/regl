@@ -37,12 +37,12 @@ pub struct Buffer {
 }
 
 impl Buffer {
-    pub fn new(support: &mut ResourceCreationSupport) -> ReglResult<Buffer> {
+    pub fn new(support: &mut ResourceCreationSupport, target: BufferTarget) -> ReglResult<Buffer> {
         let base_buffer = BaseBuffer {
             shared_context: support.get_shared_context(),
             uid: support.generate_id(),
             gl_id: 0,
-            target: BufferTarget::VertexBuffer,
+            target: target,
         };
         Ok(Buffer { base_buffer: Rc::new(base_buffer) })
     }
