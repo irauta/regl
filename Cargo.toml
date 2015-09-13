@@ -2,3 +2,6 @@
 name = "regl"
 version = "0.1.0"
 authors = ["Ilkka Rauta <ilkka.rauta@gmail.com>"]
+
+[dependencies.gl]
+version = "0.0.12"
