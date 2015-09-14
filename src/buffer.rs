@@ -4,13 +4,19 @@ use std::rc::Rc;
 use ::id::{Id,GenerateId};
 use ::ReglResult;
 use ::GlId;
+use ::tracker::BindIf;
 use ::resource::ResourceCreationSupport;
 
-pub trait BufferSupport {}
+pub trait BufferSupport : BindIf<VertexBufferTag> + BindIf<IndexBufferTag> {}
 
 pub trait UpdateBuffer {
 
 }
+
+#[allow(dead_code)]
+pub struct VertexBufferTag;
+#[allow(dead_code)]
+pub struct IndexBufferTag;
 
 #[derive(Debug,Clone,Copy)]
 pub enum BufferTarget {
