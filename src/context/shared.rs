@@ -6,44 +6,44 @@ use ::buffer::{BufferSupport,VertexBufferTag,IndexBufferTag};
 use ::vertex_array::{VertexArray,VertexArraySupport};
 
 pub struct SharedContext {
-    draw_framebuffer: SimpleTracker,
-    vertex_array: SimpleTracker,
-    vertex_buffer: SimpleTracker,
-    index_buffer: SimpleTracker,
+    draw_framebuffer_tracker: SimpleTracker,
+    vertex_array_tracker: SimpleTracker,
+    vertex_buffer_tracker: SimpleTracker,
+    index_buffer_tracker: SimpleTracker,
 }
 
 pub fn new_shared_context() -> SharedContext {
     SharedContext {
-        draw_framebuffer: SimpleTracker::new(),
-        vertex_array: SimpleTracker::new(),
-        vertex_buffer: SimpleTracker::new(),
-        index_buffer: SimpleTracker::new(),
+        draw_framebuffer_tracker: SimpleTracker::new(),
+        vertex_array_tracker: SimpleTracker::new(),
+        vertex_buffer_tracker: SimpleTracker::new(),
+        index_buffer_tracker: SimpleTracker::new(),
     }
 }
 
 
 impl BindIf<DrawFramebufferTag> for SharedContext {
     fn bind_if(&self, uid: &Id, bind: &Fn()) {
-        self.draw_framebuffer.bind_if(uid, bind)
+        self.draw_framebuffer_tracker.bind_if(uid, bind)
     }
 }
 
 impl BindIf<VertexArray> for SharedContext {
     fn bind_if(&self, uid: &Id, bind: &Fn()) {
-        self.vertex_array.bind_if(uid, bind)
+        self.vertex_array_tracker.bind_if(uid, bind)
     }
 }
 
 impl BindIf<VertexBufferTag> for SharedContext {
     fn bind_if(&self, uid: &Id, bind: &Fn()) {
-        self.vertex_buffer.bind_if(uid, bind)
+        self.vertex_buffer_tracker.bind_if(uid, bind)
     }
 }
 
 impl BindIf<IndexBufferTag> for SharedContext {
     fn bind_if(&self, uid: &Id, bind: &Fn()) {
         // TODO: Do what's necessary to bind an index buffer!
-        //self.vertex_array.bind_if(uid, bind)
+        //self.vertex_array_tracker.bind_if(uid, bind)
     }
 }
 
