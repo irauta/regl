@@ -47,13 +47,6 @@ impl BindIf<IndexBufferTag> for SharedContext {
     }
 }
 
-/*impl BindIf<Framebuffer> for SharedContext {
-    fn bind_if(&self, uid: &Id, bind: &Fn() -> Result<(), ReglError>) -> Result<(), ReglError>
-    {
-        self.current_framebuffer.bind_if(uid, bind)
-    }
-}*/
-
 impl FramebufferSupport for SharedContext {}
 
 impl VertexArraySupport for SharedContext {}
