@@ -42,8 +42,7 @@ impl BindIf<VertexBufferTag> for SharedContext {
 
 impl BindIf<IndexBufferTag> for SharedContext {
     fn bind_if(&self, uid: &Id, bind: &Fn()) {
-        // TODO: Do what's necessary to bind an index buffer!
-        //self.vertex_array_tracker.bind_if(uid, bind)
+        self.index_buffer_tracker.bind_if(uid, bind)
     }
 }
 
