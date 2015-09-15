@@ -12,7 +12,7 @@ pub trait BufferCreationSupport : ResourceCreationSupport {
     fn get_default_vertex_array(&mut self) -> Rc<VertexArray>;
 }
 
-pub trait BufferSupport : BindIf<VertexBufferTag> + BindIf<IndexBufferTag> {}
+pub trait BufferSupport : BindIf<VertexBufferTag> + BindIf<IndexBufferTag> + BindIf<UniformBufferTag> {}
 
 pub trait UpdateBuffer {
 
@@ -22,6 +22,8 @@ pub trait UpdateBuffer {
 pub struct VertexBufferTag;
 #[allow(dead_code)]
 pub struct IndexBufferTag;
+#[allow(dead_code)]
+pub struct UniformBufferTag;
 
 #[derive(Debug,Clone,Copy)]
 pub enum BufferTarget {
@@ -52,8 +54,7 @@ impl BaseBuffer {
         match target {
             BufferTarget::VertexBuffer => BindIf::<VertexBufferTag>::bind_if(&*self.shared_context, &self.uid, &|| self.gl_bind(target)),
             BufferTarget::IndexBuffer => BindIf::<IndexBufferTag>::bind_if(&*self.shared_context, &self.uid, &|| self.gl_bind(target)),
-            // TODO: Actually handle all cases!
-            _ => {}
+            BufferTarget::UniformBuffer => BindIf::<UniformBufferTag>::bind_if(&*self.shared_context, &self.uid, &|| self.gl_bind(target)),
         }
     }
 
