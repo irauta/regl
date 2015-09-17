@@ -1,5 +1,6 @@
 
 use std::rc::Rc;
+use std::fmt::Debug;
 
 use ::id::{Id,GenerateId};
 use ::ReglResult;
@@ -12,7 +13,7 @@ pub trait BufferCreationSupport : ResourceCreationSupport {
     fn get_default_vertex_array(&mut self) -> Rc<VertexArray>;
 }
 
-pub trait BufferSupport : BindIf<VertexBufferTag> + BindIf<IndexBufferTag> + BindIf<UniformBufferTag> {}
+pub trait BufferSupport : BindIf<VertexBufferTag> + BindIf<IndexBufferTag> + BindIf<UniformBufferTag> + Debug {}
 
 pub trait UpdateBuffer {
 
@@ -32,6 +33,7 @@ pub enum BufferTarget {
     UniformBuffer,
 }
 
+#[derive(Debug)]
 pub struct BaseBuffer {
     shared_context: Rc<BufferSupport>,
     uid: Id,
@@ -73,6 +75,7 @@ impl Drop for BaseBuffer {
     }
 }
 
+#[derive(Debug)]
 pub struct Buffer {
     base_buffer: Rc<BaseBuffer>
 }

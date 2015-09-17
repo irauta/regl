@@ -2,6 +2,7 @@
 use std::cell::Cell;
 use ::id::{Id,WeakId};
 
+#[derive(Debug)]
 pub struct SimpleTracker {
     current: Cell<WeakId>,
 }

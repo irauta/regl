@@ -23,7 +23,7 @@ pub use gl::load_with;
 pub use context::Context;
 pub use buffer::{Buffer,BufferTarget};
 pub use framebuffer::Framebuffer;
-pub use vertex_array::VertexArray;
+pub use vertex_array::{VertexArray};
 
 pub fn nothing() {}
 

@@ -5,6 +5,7 @@ use ::framebuffer::{FramebufferSupport,DrawFramebufferTag};
 use ::buffer::{BufferSupport,VertexBufferTag,IndexBufferTag,UniformBufferTag};
 use ::vertex_array::{VertexArray,VertexArraySupport};
 
+#[derive(Debug)]
 pub struct SharedContext {
     draw_framebuffer_tracker: SimpleTracker,
     vertex_array_tracker: SimpleTracker,

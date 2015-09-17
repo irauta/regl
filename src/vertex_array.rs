@@ -1,5 +1,6 @@
 
 use std::rc::Rc;
+use std::fmt::Debug;
 use ::id::{Id,GenerateId};
 use ::ReglResult;
 use ::GlId;
@@ -7,8 +8,9 @@ use ::tracker::BindIf;
 use ::resource::ResourceCreationSupport;
 use ::buffer::{Buffer,BaseBuffer,BufferTarget,IndexBufferTag,get_base_buffer};
 
-pub trait VertexArraySupport : BindIf<VertexArray> + BindIf<IndexBufferTag> { }
+pub trait VertexArraySupport : BindIf<VertexArray> + BindIf<IndexBufferTag> + Debug { }
 
+#[derive(Debug)]
 pub struct VertexArray {
     shared_context: Rc<VertexArraySupport>,
     uid: Id,

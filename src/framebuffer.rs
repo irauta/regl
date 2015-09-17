@@ -1,18 +1,20 @@
 
 use std::rc::Rc;
+use std::fmt::Debug;
 use ::id::{Id,GenerateId};
 use ::ReglResult;
 use ::GlId;
 use ::tracker::BindIf;
 use ::resource::ResourceCreationSupport;
 
-pub trait FramebufferSupport : BindIf<DrawFramebufferTag> {
+pub trait FramebufferSupport : BindIf<DrawFramebufferTag> + Debug {
 
 }
 
 #[allow(dead_code)]
 pub struct DrawFramebufferTag;
 
+#[derive(Debug)]
 pub struct Framebuffer {
     shared_context: Rc<FramebufferSupport>,
     uid: Id,
