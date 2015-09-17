@@ -57,6 +57,10 @@ impl BindIf<UniformBufferTag> for SharedContext {
 
 impl FramebufferSupport for SharedContext {}
 
-impl VertexArraySupport for SharedContext {}
+impl VertexArraySupport for SharedContext {
+    fn separate_ibo_binding(&self) -> bool {
+        false
+    }
+}
 
 impl BufferSupport for SharedContext {}
