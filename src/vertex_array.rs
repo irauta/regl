@@ -1,6 +1,7 @@
 
 use std::rc::Rc;
 use std::fmt::Debug;
+use ::gl::types::{GLenum,GLuint,GLint,GLboolean,GLsizei,GLvoid};
 use ::id::{Id,GenerateId};
 use ::ReglResult;
 use ::GlId;
@@ -70,7 +71,7 @@ impl VertexArray {
             index_buffer: index_buffer.map(|b| get_base_buffer(b).clone()),
         };
         vertex_array.bind();
-        setup_vertex_array(&*vertex_array.shared_context, index_buffer.map(get_base_buffer));
+        setup_vertex_array(&*vertex_array.shared_context, &vertex_array.attributes[..], index_buffer.map(get_base_buffer));
         Ok(vertex_array)
     }
 
@@ -90,11 +91,22 @@ impl VertexArray {
 }
 
 /// Expects that the vertex array has already been bound
-fn setup_vertex_array(shared_context: &VertexArraySupport, index_buffer: Option<&Rc<BaseBuffer>>) {
+fn setup_vertex_array(shared_context: &VertexArraySupport, attributes: &[StoredVertexAttribute], index_buffer: Option<&Rc<BaseBuffer>>) {
     if let Some(ref ibo) = index_buffer {
         BindIf::<IndexBufferTag>::bind_if(shared_context, &ibo.get_id(), &|| ibo.bind_target(BufferTarget::IndexBuffer));
     }
-    // TODO: Attach (more) stuff to vertex array
+    for attribute in attributes {
+        attribute.vertex_buffer.bind_target(BufferTarget::VertexBuffer);
+        glcall!(EnableVertexAttribArray(attribute.index));
+        glcall!(VertexAttribPointer(
+            attribute.index as GLuint,
+            attribute.size as GLint,
+            attribute_to_gl_type(attribute.attribute_type),
+            attribute.normalized as GLboolean,
+            attribute.stride as GLsizei,
+            attribute.offset as *const GLvoid
+        ));
+    }
 }
 
 pub fn bind_vertex_array(vertex_array: &VertexArray) {
@@ -120,5 +132,21 @@ fn into_stored<'a>(attribute: &VertexAttribute<'a>) -> StoredVertexAttribute {
         stride: attribute.stride,
         offset: attribute.offset,
         vertex_buffer: get_base_buffer(attribute.vertex_buffer).clone(),
+    }
+}
+
+fn attribute_to_gl_type(attribute_type: VertexAttributeType) -> GLenum {
+    match attribute_type {
+        VertexAttributeType::Byte => ::gl::BYTE,
+        VertexAttributeType::UnsignedByte => ::gl::UNSIGNED_BYTE,
+        VertexAttributeType::Short => ::gl::SHORT,
+        VertexAttributeType::UnsignedShort => ::gl::UNSIGNED_SHORT,
+        VertexAttributeType::Int => ::gl::INT,
+        VertexAttributeType::UnsignedInt => ::gl::UNSIGNED_INT,
+        VertexAttributeType::HalfFloat => ::gl::HALF_FLOAT,
+        VertexAttributeType::Float => ::gl::FLOAT,
+        VertexAttributeType::Double => ::gl::DOUBLE,
+        VertexAttributeType::Int2101010Rev => ::gl::INT_2_10_10_10_REV,
+        VertexAttributeType::UnsignedInt2101010Rev => ::gl::UNSIGNED_INT_2_10_10_10_REV
     }
 }
