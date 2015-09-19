@@ -11,6 +11,7 @@ mod context;
 mod buffer;
 mod framebuffer;
 mod vertex_array;
+mod program;
 
 type GlId = gl::types::GLuint;
 
@@ -24,6 +25,7 @@ pub use context::Context;
 pub use buffer::{Buffer,BufferTarget};
 pub use framebuffer::Framebuffer;
 pub use vertex_array::{VertexArray,VertexAttributeType,VertexAttribute};
+pub use program::Program;
 
 pub fn nothing() {}
 
