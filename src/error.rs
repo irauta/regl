@@ -5,6 +5,7 @@ use std::ffi::NulError;
 pub enum ReglError {
     NulError(NulError),
     ShaderCompilationError(String),
+    ProgramLinkingError(String),
 }
 
 impl From<NulError> for ReglError {
