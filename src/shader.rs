@@ -2,8 +2,13 @@
 use std::ffi::CString;
 use ::gl::types::{GLenum,GLint};
 use ::GlId;
+use ::resource::ResourceCreationSupport;
 use ::ReglResult;
 use ::ReglError;
+
+pub trait InternalShader {
+    fn gl_id(&self) -> GlId;
+}
 
 #[derive(Debug,Clone,Copy)]
 pub enum ShaderType {
@@ -20,7 +25,12 @@ pub struct Shader {
 }
 
 impl Shader {
-    pub fn new(shader_source: &ShaderSource) -> ReglResult<Shader> {
+    pub fn new(support: &mut ResourceCreationSupport, shader_source: &ShaderSource) -> ReglResult<Shader> {
+        // Dummy use of the context. Actually the parameter is there just for consistency.
+        // This use here is because a blanket #[allow(unused_variables)] would stop warnings
+        // for all other variables too.
+        support.get_shared_context();
+
         let gl_id = glcall!(CreateShader(gl_shader_type(shader_source.0)));
 
         try!(add_shader_source(gl_id, shader_source.1));
@@ -37,8 +47,10 @@ impl Shader {
     pub fn info_log(&self) -> String {
         info_log(self.gl_id)
     }
+}
 
-    pub fn gl_id(&self) -> GlId {
+impl InternalShader for Shader {
+    fn gl_id(&self) -> GlId {
         self.gl_id
     }
 }

@@ -6,11 +6,7 @@ use ::ReglResult;
 use ::GlId;
 use ::tracker::BindIf;
 use ::resource::ResourceCreationSupport;
-
-use self::shader::Shader;
-pub use self::shader::{ShaderType,ShaderSource};
-
-mod shader;
+use ::shader::{Shader,InternalShader};
 
 pub trait ProgramSupport : BindIf<Program> + Debug {}
 
@@ -22,9 +18,7 @@ pub struct Program {
 }
 
 impl Program {
-    pub fn new(support: &mut ResourceCreationSupport, shader_sources: &[ShaderSource]) -> ReglResult<Program> {
-        let shaders: Vec<Shader> = try!(shader_sources.iter().map(Shader::new).collect());
-
+    pub fn new(support: &mut ResourceCreationSupport, shaders: &[Shader]) -> ReglResult<Program> {
         let gl_id = glcall!(CreateProgram());
 
         for shader in shaders {
