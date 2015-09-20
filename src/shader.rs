@@ -6,6 +6,10 @@ use ::resource::ResourceCreationSupport;
 use ::ReglResult;
 use ::ReglError;
 
+pub trait ShaderCreationSupport : ResourceCreationSupport {
+    fn validate_after_compilation(&self) -> bool;
+}
+
 pub trait InternalShader {
     fn gl_id(&self) -> GlId;
 }
@@ -25,17 +29,12 @@ pub struct Shader {
 }
 
 impl Shader {
-    pub fn new(support: &mut ResourceCreationSupport, shader_source: &ShaderSource) -> ReglResult<Shader> {
-        // Dummy use of the context. Actually the parameter is there just for consistency.
-        // This use here is because a blanket #[allow(unused_variables)] would stop warnings
-        // for all other variables too.
-        support.get_shared_context();
-
+    pub fn new(support: &mut ShaderCreationSupport, shader_source: &ShaderSource) -> ReglResult<Shader> {
         let gl_id = glcall!(CreateShader(gl_shader_type(shader_source.0)));
 
         try!(add_shader_source(gl_id, shader_source.1));
         glcall!(CompileShader(gl_id));
-        if !compiled(gl_id) {
+        if support.validate_after_compilation() && !compiled(gl_id) {
             return Err(ReglError::ShaderCompilationError(info_log(gl_id)));
         }
 

@@ -8,12 +8,15 @@ use ::resource::ResourceCreationSupport;
 use ::buffer::BufferCreationSupport;
 use ::framebuffer::{self,Framebuffer};
 use ::vertex_array::{self,VertexArray};
+use ::program::ProgramCreationSupport;
+use ::shader::ShaderCreationSupport;
 
 pub struct Context {
     id_gen: IdGenerator,
     shared_context: Rc<SharedContext>,
     default_framebuffer: Framebuffer,
     default_vertex_array: Rc<VertexArray>,
+    validate_shaders: bool,
 }
 
 impl Context {
@@ -29,6 +32,7 @@ impl Context {
             shared_context: booter.shared_context,
             default_framebuffer: default_framebuffer,
             default_vertex_array: default_vertex_array,
+            validate_shaders: true,
         }
     }
 
@@ -52,6 +56,18 @@ impl ResourceCreationSupport for Context {
 impl BufferCreationSupport for Context {
     fn get_default_vertex_array(&mut self) -> Rc<VertexArray> {
         self.default_vertex_array.clone()
+    }
+}
+
+impl ProgramCreationSupport for Context {
+    fn validate_after_linking(&self) -> bool {
+        self.validate_shaders
+    }
+}
+
+impl ShaderCreationSupport for Context {
+    fn validate_after_compilation(&self) -> bool {
+        self.validate_shaders
     }
 }
 

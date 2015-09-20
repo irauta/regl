@@ -10,6 +10,10 @@ use ::tracker::BindIf;
 use ::resource::ResourceCreationSupport;
 use ::shader::{Shader,InternalShader};
 
+pub trait ProgramCreationSupport : ResourceCreationSupport {
+    fn validate_after_linking(&self) -> bool;
+}
+
 pub trait ProgramSupport : BindIf<Program> + Debug {}
 
 #[derive(Debug)]
@@ -20,7 +24,7 @@ pub struct Program {
 }
 
 impl Program {
-    pub fn new(support: &mut ResourceCreationSupport, shaders: &[Shader]) -> ReglResult<Program> {
+    pub fn new(support: &mut ProgramCreationSupport, shaders: &[Shader]) -> ReglResult<Program> {
         let gl_id = glcall!(CreateProgram());
 
         for shader in shaders {
@@ -28,7 +32,7 @@ impl Program {
         }
 
         glcall!(LinkProgram(gl_id));
-        if !linked(gl_id) {
+        if support.validate_after_linking() && !linked(gl_id) {
             return Err(ReglError::ProgramLinkingError(info_log(gl_id)));
         }
 
