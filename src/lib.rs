@@ -24,7 +24,7 @@ pub use gl::load_with;
 
 pub use error::ReglError;
 pub use context::Context;
-pub use buffer::{Buffer,BufferTarget};
+pub use buffer::{Buffer,BufferTarget,BufferUsage};
 pub use framebuffer::Framebuffer;
 pub use vertex_array::{VertexArray,VertexAttributeType,VertexAttribute};
 pub use shader::{Shader,ShaderType,ShaderSource};
