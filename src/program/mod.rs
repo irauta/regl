@@ -16,6 +16,10 @@ pub trait ProgramCreationSupport : ResourceCreationSupport {
 
 pub trait ProgramSupport : BindIf<Program> + Debug {}
 
+pub trait ProgramInternal {
+    fn bind(&self);
+}
+
 #[derive(Debug)]
 pub struct Program {
     shared_context: Rc<ProgramSupport>,
@@ -49,6 +53,16 @@ impl Program {
 
     pub fn info_log(&self) -> String {
         info_log(self.gl_id)
+    }
+
+    fn gl_bind(&self) {
+        glcall!(UseProgram(self.gl_id));
+    }
+}
+
+impl ProgramInternal for Program {
+    fn bind(&self) {
+        self.shared_context.bind_if(&self.uid, &|| self.gl_bind());
     }
 }
 

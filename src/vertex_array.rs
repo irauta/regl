@@ -13,6 +13,10 @@ pub trait VertexArraySupport : BindIf<VertexArray> + BindIf<IndexBufferTag> + De
     fn separate_ibo_binding(&self) -> bool;
 }
 
+pub trait VertexArrayInternal {
+    fn bind(&self);
+}
+
 #[derive(Debug)]
 pub struct VertexArray {
     shared_context: Rc<VertexArraySupport>,
@@ -75,6 +79,12 @@ impl VertexArray {
         Ok(vertex_array)
     }
 
+    fn gl_bind(&self) {
+        glcall!(BindVertexArray(self.gl_id));
+    }
+}
+
+impl VertexArrayInternal for VertexArray {
     fn bind(&self) {
         //self.shared_context.bind_if(&self.uid, &|| self.gl_bind());
         BindIf::<VertexArray>::bind_if(&*self.shared_context, &self.uid, &|| self.gl_bind());
@@ -83,10 +93,6 @@ impl VertexArray {
             (&Some(ref ibo), true) => ibo.bind_target(BufferTarget::IndexBuffer),
             _ => {}
         }
-    }
-
-    fn gl_bind(&self) {
-        glcall!(BindVertexArray(self.gl_id));
     }
 }
 

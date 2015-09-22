@@ -11,6 +11,10 @@ pub trait FramebufferSupport : BindIf<DrawFramebufferTag> + Debug {
 
 }
 
+pub trait FramebufferInternal {
+    fn bind(&self);
+}
+
 #[allow(dead_code)]
 pub struct DrawFramebufferTag;
 
@@ -46,12 +50,14 @@ impl Framebuffer {
         glcall!(ClearColor(r, g, b, a));
     }
 
-    fn bind(&self) {
-        self.shared_context.bind_if(&self.uid, &|| self.gl_bind());
-    }
-
     fn gl_bind(&self) {
         glcall!(BindFramebuffer(DRAW_FRAMEBUFFER, self.gl_id));
+    }
+}
+
+impl FramebufferInternal for Framebuffer {
+    fn bind(&self) {
+        self.shared_context.bind_if(&self.uid, &|| self.gl_bind());
     }
 }
 
