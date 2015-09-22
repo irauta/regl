@@ -29,7 +29,7 @@ pub struct Shader {
 }
 
 impl Shader {
-    pub fn new(support: &mut ShaderCreationSupport, shader_source: &ShaderSource) -> ReglResult<Shader> {
+    pub fn new<C: ShaderCreationSupport>(support: &mut C, shader_source: &ShaderSource) -> ReglResult<Shader> {
         let gl_id = glcall!(CreateShader(gl_shader_type(shader_source.0)));
 
         try!(add_shader_source(gl_id, shader_source.1));

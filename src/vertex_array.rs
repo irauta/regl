@@ -60,7 +60,7 @@ struct StoredVertexAttribute {
 }
 
 impl VertexArray {
-    pub fn new(support: &mut ResourceCreationSupport, attributes: &[VertexAttribute], index_buffer: Option<&Buffer>) -> ReglResult<VertexArray> {
+    pub fn new<C: ResourceCreationSupport>(support: &mut C, attributes: &[VertexAttribute], index_buffer: Option<&Buffer>) -> ReglResult<VertexArray> {
         let mut gl_id = 0;
         glcall!(GenVertexArrays(1, &mut gl_id));
         let vertex_array = VertexArray {
@@ -119,7 +119,7 @@ impl Drop for VertexArray {
     }
 }
 
-pub fn create_default_vertex_array(support: &mut ResourceCreationSupport) -> ReglResult<VertexArray> {
+pub fn create_default_vertex_array<C: ResourceCreationSupport>(support: &mut C) -> ReglResult<VertexArray> {
     VertexArray::new(support, &[], None)
 }
 

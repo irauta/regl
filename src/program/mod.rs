@@ -24,7 +24,7 @@ pub struct Program {
 }
 
 impl Program {
-    pub fn new(support: &mut ProgramCreationSupport, shaders: &[Shader]) -> ReglResult<Program> {
+    pub fn new<C: ProgramCreationSupport>(support: &mut C, shaders: &[Shader]) -> ReglResult<Program> {
         let gl_id = glcall!(CreateProgram());
 
         for shader in shaders {

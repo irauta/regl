@@ -22,7 +22,7 @@ pub struct Framebuffer {
 }
 
 impl Framebuffer {
-    pub fn new(support: &mut ResourceCreationSupport) -> ReglResult<Framebuffer> {
+    pub fn new<C: ResourceCreationSupport>(support: &mut C) -> ReglResult<Framebuffer> {
         let mut gl_id = 0;
         glcall!(GenFramebuffers(1, &mut gl_id));
         let framebuffer = Framebuffer {
@@ -55,7 +55,7 @@ impl Framebuffer {
     }
 }
 
-pub fn create_default_framebuffer(support: &mut ResourceCreationSupport) -> Framebuffer {
+pub fn create_default_framebuffer<C: ResourceCreationSupport>(support: &mut C) -> Framebuffer {
     let uid = support.generate_id();
     Framebuffer {
         shared_context: support.get_shared_context(),

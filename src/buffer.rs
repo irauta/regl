@@ -111,7 +111,7 @@ pub struct Buffer {
 }
 
 impl Buffer {
-    pub fn new<T>(support: &mut BufferCreationSupport, target: BufferTarget, usage: BufferUsage, data: &[T]) -> ReglResult<Buffer> {
+    pub fn new<C: BufferCreationSupport, T>(support: &mut C, target: BufferTarget, usage: BufferUsage, data: &[T]) -> ReglResult<Buffer> {
         let mut gl_id = 0;
         glcall!(GenBuffers(1, &mut gl_id));
         let base_buffer = BaseBuffer {
