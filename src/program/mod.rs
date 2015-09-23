@@ -10,6 +10,8 @@ use ::tracker::BindIf;
 use ::resource::ResourceCreationSupport;
 use ::shader::{Shader,InternalShader};
 
+mod attribute;
+
 pub trait ProgramCreationSupport : ResourceCreationSupport {
     fn validate_after_linking(&self) -> bool;
 }
