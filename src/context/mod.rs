@@ -34,9 +34,6 @@ impl Context {
         let default_framebuffer = framebuffer::create_default_framebuffer(&mut booter);
         let default_vertex_array = Rc::new(vertex_array::create_default_vertex_array(&mut booter).unwrap());
 
-        // TODO: Remove temporary fix when general capability setting is added
-        glcall!(Disable(DEPTH_TEST));
-
         Context {
             id_gen: booter.id_gen,
             shared_context: booter.shared_context,
