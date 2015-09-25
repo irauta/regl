@@ -10,7 +10,11 @@ use ::tracker::BindIf;
 use ::resource::ResourceCreationSupport;
 use ::shader::{Shader,InternalShader};
 
+pub use self::attribute::{AttributeInfo,ShaderAttribute,ShaderAttributeType};
+pub use self::uniform::{UniformInfo,Uniform,InterfaceBlock,BlockUniform};
+
 mod attribute;
+mod uniform;
 
 pub trait ProgramCreationSupport : ResourceCreationSupport {
     fn validate_after_linking(&self) -> bool;
@@ -55,6 +59,14 @@ impl Program {
 
     pub fn info_log(&self) -> String {
         info_log(self.gl_id)
+    }
+
+    pub fn attribute_info(&self) -> AttributeInfo {
+        attribute::get_attribute_info(self.gl_id)
+    }
+
+    pub fn uniform_info(&self) -> UniformInfo {
+        uniform::get_uniform_info(self.gl_id)
     }
 
     fn gl_bind(&self) {

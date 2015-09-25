@@ -41,12 +41,27 @@ pub struct ShaderAttribute {
     pub size: i32,
 }
 
-pub fn get_active_attributes(program_id: GLuint) -> Vec<ShaderAttribute> {
+pub struct AttributeInfo {
+    pub attributes: Vec<ShaderAttribute>,
+}
+
+impl AttributeInfo {
+    pub fn find_by_name<T: AsRef<str>>(&self, name: T) -> Option<&ShaderAttribute> {
+        self.attributes.iter().find(|a| a.name == name.as_ref())
+    }
+}
+
+pub fn get_attribute_info(program_id: GLuint) -> AttributeInfo {
     let attr_count = gl_program_value(program_id, ::gl::ACTIVE_ATTRIBUTES);
+    if attr_count == 0 {
+        return AttributeInfo {
+            attributes: vec![],
+        };
+    }
     let max_length = gl_program_value(program_id, ::gl::ACTIVE_ATTRIBUTE_MAX_LENGTH);
     let mut name_buffer = vec![0u8; max_length as usize];
 
-    (0..attr_count).map(|i| {
+    let attributes = (0..attr_count).map(|i| {
         let mut actual_length = 0;
         let mut size = 0;
         let mut gl_type = 0;
@@ -69,7 +84,11 @@ pub fn get_active_attributes(program_id: GLuint) -> Vec<ShaderAttribute> {
             attribute_type: gl_type.into(),
             size: size,
         }
-    }).collect()
+    }).collect();
+
+    AttributeInfo {
+        attributes: attributes,
+    }
 }
 
 impl From<GLenum> for ShaderAttributeType {

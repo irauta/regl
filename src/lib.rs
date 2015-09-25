@@ -29,3 +29,5 @@ pub use framebuffer::Framebuffer;
 pub use vertex_array::{VertexArray,VertexAttributeType,VertexAttribute};
 pub use shader::{Shader,ShaderType,ShaderSource};
 pub use program::Program;
+pub use program::{AttributeInfo,ShaderAttribute,ShaderAttributeType};
+pub use program::{UniformInfo,Uniform,InterfaceBlock,BlockUniform};
