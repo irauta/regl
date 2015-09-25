@@ -1,5 +1,7 @@
 
+use std::ffi::CString;
 use ::gl::types::{GLuint,GLenum};
+use ::ReglResult;
 use super::gl_program_value;
 
 #[derive(Debug,Clone,Copy)]
@@ -89,6 +91,11 @@ pub fn get_attribute_info(program_id: GLuint) -> AttributeInfo {
     AttributeInfo {
         attributes: attributes,
     }
+}
+
+pub fn get_attribute_location(program_id: GLuint, name: &str) -> ReglResult<i32> {
+    let c_name = try!(CString::new(name));
+    Ok(glcall!(GetAttribLocation(program_id, c_name.as_ptr())))
 }
 
 impl From<GLenum> for ShaderAttributeType {

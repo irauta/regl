@@ -65,8 +65,16 @@ impl Program {
         attribute::get_attribute_info(self.gl_id)
     }
 
+    pub fn attribute_location<T: AsRef<str>>(&self, name: T) -> ReglResult<i32> {
+        attribute::get_attribute_location(self.gl_id, name.as_ref())
+    }
+
     pub fn uniform_info(&self) -> UniformInfo {
         uniform::get_uniform_info(self.gl_id)
+    }
+
+    pub fn uniform_location<T: AsRef<str>>(&self, name: T) -> ReglResult<i32> {
+        uniform::get_uniform_location(self.gl_id, name.as_ref())
     }
 
     fn gl_bind(&self) {

@@ -1,5 +1,7 @@
 
+use std::ffi::CString;
 use ::gl::types::{GLenum,GLint,GLuint,GLsizei};
+use ::ReglResult;
 use super::gl_program_value;
 
 // To see the definition of UniformType, look at the bottom of file. It's the really big enum.
@@ -193,6 +195,11 @@ fn gl_block_property(program_id: GLuint, block_index: GLuint, property: GLenum) 
     let mut value = 0;
     glcall!(GetActiveUniformBlockiv(program_id, block_index, property, &mut value));
     value
+}
+
+pub fn get_uniform_location(program_id: GLuint, name: &str) -> ReglResult<i32> {
+    let c_name = try!(CString::new(name));
+    Ok(glcall!(GetUniformLocation(program_id, c_name.as_ptr())))
 }
 
 #[derive(Debug,Clone,Copy)]
