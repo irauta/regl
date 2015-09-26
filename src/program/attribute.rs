@@ -43,6 +43,7 @@ pub struct ShaderAttribute {
     pub size: i32,
 }
 
+#[derive(Debug)]
 pub struct AttributeInfo {
     pub attributes: Vec<ShaderAttribute>,
 }
