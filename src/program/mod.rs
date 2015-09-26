@@ -77,19 +77,23 @@ impl Program {
         uniform::get_uniform_location(self.gl_id, name.as_ref())
     }
 
-    pub fn uniform_f32(location: i32, uniform_type: UniformType, count: u32, values: &[f32]) -> ReglResult<()> {
+    pub fn uniform_f32(&self, location: i32, uniform_type: UniformType, count: u32, values: &[f32]) -> ReglResult<()> {
+        self.bind();
         uniform::uniform_value_f32(location, uniform_type, count, values)
     }
 
-    pub fn uniform_u32(location: i32, uniform_type: UniformType, count: u32, values: &[u32]) -> ReglResult<()> {
+    pub fn uniform_u32(&self, location: i32, uniform_type: UniformType, count: u32, values: &[u32]) -> ReglResult<()> {
+        self.bind();
         uniform::uniform_value_u32(location, uniform_type, count, values)
     }
 
-    pub fn uniform_i32(location: i32, uniform_type: UniformType, count: u32, values: &[i32]) -> ReglResult<()> {
+    pub fn uniform_i32(&self, location: i32, uniform_type: UniformType, count: u32, values: &[i32]) -> ReglResult<()> {
+        self.bind();
         uniform::uniform_value_i32(location, uniform_type, count, values)
     }
 
-    pub fn uniform_matrix(location: i32, uniform_type: UniformType, count: u32, values: &[f32], transpose: bool) -> ReglResult<()> {
+    pub fn uniform_matrix(&self, location: i32, uniform_type: UniformType, count: u32, values: &[f32], transpose: bool) -> ReglResult<()> {
+        self.bind();
         uniform::uniform_value_matrix(location, uniform_type, count, values, transpose)
     }
 
