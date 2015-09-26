@@ -54,6 +54,12 @@ pub struct InterfaceBlock {
     pub uniforms: Vec<BlockUniform>
 }
 
+impl InterfaceBlock {
+    pub fn find<T: AsRef<str>>(&self, name: T) -> Option<&BlockUniform> {
+        self.uniforms.iter().find(|a| a.name == name.as_ref())
+    }
+}
+
 /// A uniform contained within a block.
 /// TODO: Missing info whether a matrix uniform is row major.
 #[derive(Debug)]
@@ -80,6 +86,16 @@ pub struct UniformInfo {
     pub globals: Vec<Uniform>,
     /// Interface block definitions, may contain several uniforms themselves.
     pub blocks: Vec<InterfaceBlock>
+}
+
+impl UniformInfo {
+    pub fn find_global<T: AsRef<str>>(&self, name: T) -> Option<&Uniform> {
+        self.globals.iter().find(|a| a.name == name.as_ref())
+    }
+
+    pub fn find_block<T: AsRef<str>>(&self, name: T) -> Option<&InterfaceBlock> {
+        self.blocks.iter().find(|a| a.name == name.as_ref())
+    }
 }
 
 #[derive(Default)]
