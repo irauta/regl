@@ -9,6 +9,8 @@ pub enum ReglError {
     ShaderCompilationError(String),
     ProgramLinkingError(String),
     BufferDataOutOfRange,
+    UniformTypeMismatch,
+    InvalidUniformValueCount,
 }
 
 impl From<NulError> for ReglError {
@@ -33,6 +35,8 @@ impl Error for ReglError {
             ReglError::ShaderCompilationError(_) => "GLSL shader compilation failed",
             ReglError::ProgramLinkingError(_) => "GLSL shader program linking failed",
             ReglError::BufferDataOutOfRange => "Tried to update buffer data beyond buffer end",
+            ReglError::UniformTypeMismatch => "UniformType and type of the given data do no match",
+            ReglError::InvalidUniformValueCount => "The length of uniform value slice, the UniformType and the count parameter do not match ",
         }
     }
 }
@@ -43,5 +47,7 @@ fn additional_message(error: &ReglError) -> Option<&str> {
         ReglError::ShaderCompilationError(ref msg) => Some(msg.as_ref()),
         ReglError::ProgramLinkingError(ref msg) => Some(msg.as_ref()),
         ReglError::BufferDataOutOfRange => None,
+        ReglError::UniformTypeMismatch => None,
+        ReglError::InvalidUniformValueCount => None,
     }
 }

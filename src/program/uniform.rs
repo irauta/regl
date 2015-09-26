@@ -2,6 +2,7 @@
 use std::ffi::CString;
 use ::gl::types::{GLenum,GLint,GLuint,GLsizei};
 use ::ReglResult;
+use ::ReglError;
 use super::gl_program_value;
 
 // To see the definition of UniformType, look at the bottom of file. It's the really big enum.
@@ -200,6 +201,154 @@ fn gl_block_property(program_id: GLuint, block_index: GLuint, property: GLenum) 
 pub fn get_uniform_location(program_id: GLuint, name: &str) -> ReglResult<i32> {
     let c_name = try!(CString::new(name));
     Ok(glcall!(GetUniformLocation(program_id, c_name.as_ptr())))
+}
+
+pub fn uniform_value_f32(location: i32, uniform_type: UniformType, count: u32, values: &[f32]) -> ReglResult<()> {
+    match uniform_type {
+        UniformType::FloatMat2
+        | UniformType::FloatMat3
+        | UniformType::FloatMat4
+        | UniformType::FloatMat2x3
+        | UniformType::FloatMat2x4
+        | UniformType::FloatMat3x2
+        | UniformType::FloatMat3x4
+        | UniformType::FloatMat4x2
+        | UniformType::FloatMat4x3 => return uniform_value_matrix(location, uniform_type, count, values, false),
+        _ => ()
+    }
+    let components = match uniform_type {
+        UniformType::Bool | UniformType::Float => 1,
+        UniformType::BoolVec2 | UniformType::FloatVec2 => 2,
+        UniformType::BoolVec3 | UniformType::FloatVec3 => 3,
+        UniformType::BoolVec4 | UniformType::FloatVec4 => 4,
+        _ => return Err(ReglError::UniformTypeMismatch),
+    };
+    let count = count as i32;
+    match components {
+        1 => glcall!(Uniform1fv(location, count, values.as_ptr())),
+        2 => glcall!(Uniform2fv(location, count, values.as_ptr())),
+        3 => glcall!(Uniform3fv(location, count, values.as_ptr())),
+        4 => glcall!(Uniform4fv(location, count, values.as_ptr())),
+        _ => unreachable!()
+    };
+    Ok(())
+}
+
+pub fn uniform_value_i32(location: i32, uniform_type: UniformType, count: u32, values: &[i32]) -> ReglResult<()> {
+    let components = match uniform_type {
+        UniformType::Bool | UniformType::Int => 1,
+        UniformType::BoolVec2 | UniformType::IntVec2 => 2,
+        UniformType::BoolVec3 | UniformType::IntVec3 => 3,
+        UniformType::BoolVec4 | UniformType::IntVec4 => 4,
+
+        UniformType::Sampler1d
+        | UniformType::Sampler2d
+        | UniformType::Sampler3d
+        | UniformType::SamplerCube
+        | UniformType::Sampler1dShadow
+        | UniformType::Sampler2dShadow
+        | UniformType::Sampler1dArray
+        | UniformType::Sampler2dArray
+        | UniformType::Sampler1dArrayShadow
+        | UniformType::Sampler2dArrayShadow
+        | UniformType::Sampler2dMultisample
+        | UniformType::Sampler2dMultisampleArray
+        | UniformType::SamplerCubeShadow
+        | UniformType::SamplerBuffer
+        | UniformType::Sampler2dRect
+        | UniformType::Sampler2dRectShadow
+        | UniformType::IntSampler1d
+        | UniformType::IntSampler2d
+        | UniformType::IntSampler3d
+        | UniformType::IntSamplerCube
+        | UniformType::IntSampler1dArray
+        | UniformType::IntSampler2dArray
+        | UniformType::IntSampler2dMultisample
+        | UniformType::IntSampler2dMultisampleArray
+        | UniformType::IntSamplerBuffer
+        | UniformType::IntSampler2dRect
+        | UniformType::UnsignedIntSampler1d
+        | UniformType::UnsignedIntSampler2d
+        | UniformType::UnsignedIntSampler3d
+        | UniformType::UnsignedIntSamplerCube
+        | UniformType::UnsignedIntSampler1dArray
+        | UniformType::UnsignedIntSampler2dArray
+        | UniformType::UnsignedIntSampler2dMultisample
+        | UniformType::UnsignedIntSampler2dMultisampleArray
+        | UniformType::UnsignedIntSamplerBuffer
+        | UniformType::UnsignedIntSampler2dRect => 1,
+
+        _ => return Err(ReglError::UniformTypeMismatch),
+    };
+    try!(check_uniform_element_count(components, count, values));
+    let count = count as i32;
+    match components {
+        1 => glcall!(Uniform1iv(location, count, values.as_ptr())),
+        2 => glcall!(Uniform2iv(location, count, values.as_ptr())),
+        3 => glcall!(Uniform3iv(location, count, values.as_ptr())),
+        4 => glcall!(Uniform4iv(location, count, values.as_ptr())),
+        _ => unreachable!()
+    };
+    Ok(())
+}
+
+pub fn uniform_value_u32(location: i32, uniform_type: UniformType, count: u32, values: &[u32]) -> ReglResult<()> {
+    let components = match uniform_type {
+        UniformType::Bool | UniformType::UnsignedInt => 1,
+        UniformType::BoolVec2 | UniformType::UnsignedIntVec2 => 2,
+        UniformType::BoolVec3 | UniformType::UnsignedIntVec3 => 3,
+        UniformType::BoolVec4 | UniformType::UnsignedIntVec4 => 4,
+        _ => return Err(ReglError::UniformTypeMismatch),
+    };
+    try!(check_uniform_element_count(components, count, values));
+    let count = count as i32;
+    match components {
+        1 => glcall!(Uniform1uiv(location, count, values.as_ptr())),
+        2 => glcall!(Uniform2uiv(location, count, values.as_ptr())),
+        3 => glcall!(Uniform3uiv(location, count, values.as_ptr())),
+        4 => glcall!(Uniform4uiv(location, count, values.as_ptr())),
+        _ => unreachable!()
+    };
+    Ok(())
+}
+
+pub fn uniform_value_matrix(location: i32, uniform_type: UniformType, count: u32, values: &[f32], transpose: bool) -> ReglResult<()> {
+    let transpose = if transpose { ::gl::TRUE } else { ::gl::FALSE };
+    let components = match uniform_type {
+        UniformType::FloatMat2 => 2 * 2,
+        UniformType::FloatMat3 => 3 * 3,
+        UniformType::FloatMat4 => 4 * 4,
+        UniformType::FloatMat2x3 => 2 * 3,
+        UniformType::FloatMat2x4 => 2 * 4,
+        UniformType::FloatMat3x2 => 3 * 2,
+        UniformType::FloatMat3x4 => 3 * 4,
+        UniformType::FloatMat4x2 => 4 * 2,
+        UniformType::FloatMat4x3 => 4 * 3,
+        _ => return Err(ReglError::UniformTypeMismatch),
+    };
+    try!(check_uniform_element_count(components, count, values));
+    let count = count as i32;
+    match uniform_type {
+        UniformType::FloatMat2 => glcall!(UniformMatrix2fv(location, count, transpose, values.as_ptr())),
+        UniformType::FloatMat3 => glcall!(UniformMatrix3fv(location, count, transpose, values.as_ptr())),
+        UniformType::FloatMat4 => glcall!(UniformMatrix4fv(location, count, transpose, values.as_ptr())),
+        UniformType::FloatMat2x3 => glcall!(UniformMatrix2x3fv(location, count, transpose, values.as_ptr())),
+        UniformType::FloatMat2x4 => glcall!(UniformMatrix2x4fv(location, count, transpose, values.as_ptr())),
+        UniformType::FloatMat3x2 => glcall!(UniformMatrix3x2fv(location, count, transpose, values.as_ptr())),
+        UniformType::FloatMat3x4 => glcall!(UniformMatrix3x4fv(location, count, transpose, values.as_ptr())),
+        UniformType::FloatMat4x2 => glcall!(UniformMatrix4x2fv(location, count, transpose, values.as_ptr())),
+        UniformType::FloatMat4x3 => glcall!(UniformMatrix4x3fv(location, count, transpose, values.as_ptr())),
+        _ => unreachable!(),
+    };
+    Ok(())
+}
+
+fn check_uniform_element_count<T>(components: u32, count: u32, values: &[T]) -> ReglResult<()> {
+    if components as usize * count as usize == values.len() {
+        Ok(())
+    } else {
+        Err(ReglError::InvalidUniformValueCount)
+    }
 }
 
 #[derive(Debug,Clone,Copy)]
