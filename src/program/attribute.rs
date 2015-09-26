@@ -49,7 +49,7 @@ pub struct AttributeInfo {
 }
 
 impl AttributeInfo {
-    pub fn find_by_name<T: AsRef<str>>(&self, name: T) -> Option<&ShaderAttribute> {
+    pub fn find<T: AsRef<str>>(&self, name: T) -> Option<&ShaderAttribute> {
         self.attributes.iter().find(|a| a.name == name.as_ref())
     }
 }
