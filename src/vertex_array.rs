@@ -5,11 +5,11 @@ use ::gl::types::{GLenum,GLuint,GLint,GLboolean,GLsizei,GLvoid};
 use ::id::{Id,GenerateId};
 use ::ReglResult;
 use ::GlId;
-use ::tracker::BindIf;
+use ::tracker::{BindIf,BindNone};
 use ::resource::ResourceCreationSupport;
 use ::buffer::{Buffer,BaseBuffer,BufferTarget,IndexBufferTag,get_base_buffer};
 
-pub trait VertexArraySupport : BindIf<VertexArray> + BindIf<IndexBufferTag> + Debug {
+pub trait VertexArraySupport : BindIf<VertexArray> + BindIf<IndexBufferTag> + BindNone<IndexBufferTag> + Debug {
     fn separate_ibo_binding(&self) -> bool;
 }
 
@@ -93,7 +93,7 @@ impl VertexArray {
             index_buffer: index_buffer.map(|b| get_base_buffer(b).clone()),
         };
         vertex_array.bind();
-        setup_vertex_array(&*vertex_array.shared_context, &vertex_array.attributes[..], index_buffer.map(get_base_buffer));
+        setup_vertex_array(&vertex_array.attributes[..], index_buffer.map(get_base_buffer));
         Ok(vertex_array)
     }
 
@@ -104,20 +104,23 @@ impl VertexArray {
 
 impl VertexArrayInternal for VertexArray {
     fn bind(&self) {
+        let shared_context = &*self.shared_context;
         //self.shared_context.bind_if(&self.uid, &|| self.gl_bind());
-        BindIf::<VertexArray>::bind_if(&*self.shared_context, &self.uid, &|| self.gl_bind());
-        // TODO: Handle the cases where IBO binding isn't part of VAO state!
-        match (&self.index_buffer, self.shared_context.separate_ibo_binding()) {
-            (&Some(ref ibo), true) => ibo.bind_target(BufferTarget::IndexBuffer),
-            _ => {}
+        BindIf::<VertexArray>::bind_if(shared_context, &self.uid, &|| self.gl_bind());
+        // Make sure the IBO tracker is up to date. Also work around the cases where index buffer
+        // binding isn't part of VAO state.
+        match (&self.index_buffer, shared_context.separate_ibo_binding()) {
+            (&Some(ref ibo), true) => ibo.bind_as_indices_anyway(),
+            (&Some(ref ibo), false) => BindIf::<IndexBufferTag>::bind_if(shared_context, &ibo.get_id(), &|| ()),
+            (&None, _) => BindNone::<IndexBufferTag>::bind_none(shared_context),
         }
     }
 }
 
 /// Expects that the vertex array has already been bound
-fn setup_vertex_array(shared_context: &VertexArraySupport, attributes: &[StoredVertexAttribute], index_buffer: Option<&Rc<BaseBuffer>>) {
+fn setup_vertex_array(attributes: &[StoredVertexAttribute], index_buffer: Option<&Rc<BaseBuffer>>) {
     if let Some(ref ibo) = index_buffer {
-        BindIf::<IndexBufferTag>::bind_if(shared_context, &ibo.get_id(), &|| ibo.bind_target(BufferTarget::IndexBuffer));
+        ibo.bind_as_indices_anyway();
     }
     for attribute in attributes {
         attribute.vertex_buffer.bind_target(BufferTarget::VertexBuffer);

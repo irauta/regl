@@ -66,7 +66,7 @@ impl BaseBuffer {
 
     fn bind_with_default_vao(&self) {
         bind_vertex_array(&*self.default_vertex_array);
-        self.bind_target(self.target);
+        self.bind_target(BufferTarget::IndexBuffer);
     }
 
     pub fn bind_target(&self, target: BufferTarget) {
@@ -75,6 +75,20 @@ impl BaseBuffer {
             BufferTarget::IndexBuffer => BindIf::<IndexBufferTag>::bind_if(&*self.shared_context, &self.uid, &|| self.gl_bind(target)),
             BufferTarget::UniformBuffer => BindIf::<UniformBufferTag>::bind_if(&*self.shared_context, &self.uid, &|| self.gl_bind(target)),
         }
+    }
+
+    fn bind_default(&self) {
+        if let BufferTarget::IndexBuffer = self.target {
+            self.bind_with_default_vao();
+        } else {
+            self.bind_target(self.target);
+        }
+    }
+
+    /// Forces the bind to happen; used to bind IBO to VAO
+    pub fn bind_as_indices_anyway(&self) {
+        BindIf::<IndexBufferTag>::bind_if(&*self.shared_context, &self.uid, &|| ());
+        self.gl_bind(BufferTarget::IndexBuffer);
     }
 
     fn gl_bind(&self, target: BufferTarget) {
@@ -87,14 +101,15 @@ impl BaseBuffer {
         if data_end > self.data_len as usize {
             return Err(ReglError::BufferDataOutOfRange);
         }
+        self.bind_default();
         glcall!(BufferSubData(gl_target(self.target), byte_offset as GLintptr, data_len, data.as_ptr() as *const GLvoid));
         Ok(())
     }
 
     fn initial_data<T>(&self, data: &[T]) {
-        self.bind_with_default_vao();
         let data_len = len_in_bytes(data);
         assert_eq!(self.data_len, data_len as usize);
+        self.bind_default();
         glcall!(BufferData(gl_target(self.target), data_len, data.as_ptr() as *const GLvoid, gl_usage(self.usage)))
     }
 }
