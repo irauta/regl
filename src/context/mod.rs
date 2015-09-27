@@ -2,7 +2,7 @@
 pub mod shared;
 
 use std::rc::Rc;
-use ::gl::types::{GLenum,GLint,GLsizei};
+use ::gl::types::{GLenum,GLint,GLsizei,GLvoid};
 use self::shared::{SharedContext,new_shared_context};
 use ::id::{Id,IdGenerator,GenerateId};
 use ::options::{self,RenderOption};
@@ -16,6 +16,13 @@ use ::shader::ShaderCreationSupport;
 #[derive(Debug,Clone,Copy)]
 pub enum PrimitiveMode {
     Triangles,
+}
+
+#[derive(Debug,Clone,Copy)]
+pub enum IndexType {
+    UByte,
+    UShort,
+    UInt,
 }
 
 pub struct Context {
@@ -57,18 +64,45 @@ impl Context {
             program: &Program,
             target: &Framebuffer,
             vertex_array: &VertexArray,
-            mode: PrimitiveMode, first: u32, count: u32,
+            mode: PrimitiveMode, first_vertex: u32, count: u32,
         ) {
         program.bind();
         target.bind();
         vertex_array.bind();
-        glcall!(DrawArrays(gl_mode(mode), first as GLint, count as GLsizei));
+        glcall!(DrawArrays(gl_mode(mode), first_vertex as GLint, count as GLsizei));
+    }
+
+    pub fn draw_indexed(
+            &self,
+            program: &Program,
+            target: &Framebuffer,
+            vertex_array: &VertexArray,
+            mode: PrimitiveMode, index_type: IndexType, base_vertex: u32, count: u32, index_offset: usize
+        ) {
+        program.bind();
+        target.bind();
+        vertex_array.bind();
+        glcall!(DrawElementsBaseVertex(
+            gl_mode(mode),
+            count as GLsizei,
+            gl_type(index_type),
+            index_offset as *const GLvoid,
+            base_vertex as GLint
+        ));
     }
 }
 
 fn gl_mode(mode: PrimitiveMode) -> GLenum {
     match mode {
         PrimitiveMode::Triangles => ::gl::TRIANGLES,
+    }
+}
+
+fn gl_type(index_type: IndexType) -> GLenum {
+    match index_type {
+        IndexType::UByte => ::gl::UNSIGNED_BYTE,
+        IndexType::UShort => ::gl::UNSIGNED_SHORT,
+        IndexType::UInt => ::gl::UNSIGNED_INT,
     }
 }
 

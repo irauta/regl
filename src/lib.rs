@@ -24,7 +24,7 @@ pub type ReglResult<T> = Result<T, ReglError>;
 pub use gl::load_with;
 
 pub use error::ReglError;
-pub use context::{Context,PrimitiveMode};
+pub use context::{Context,PrimitiveMode,IndexType};
 pub use options::RenderOption;
 pub use buffer::{Buffer,BufferTarget,BufferUsage};
 pub use framebuffer::Framebuffer;
