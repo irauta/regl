@@ -38,7 +38,25 @@ pub enum VertexAttributeType {
     Float,
     Double,
     Int2101010Rev,
-    UnsignedInt2101010Rev
+    UnsignedInt2101010Rev,
+}
+
+impl VertexAttributeType {
+    pub fn byte_size(&self) -> u32 {
+        match *self {
+            VertexAttributeType::Byte => 1,
+            VertexAttributeType::UnsignedByte => 1,
+            VertexAttributeType::Short => 2,
+            VertexAttributeType::UnsignedShort => 2,
+            VertexAttributeType::Int => 4,
+            VertexAttributeType::UnsignedInt => 4,
+            VertexAttributeType::HalfFloat => 2,
+            VertexAttributeType::Float => 4,
+            VertexAttributeType::Double => 8,
+            VertexAttributeType::Int2101010Rev => 4,
+            VertexAttributeType::UnsignedInt2101010Rev => 4,
+        }
+    }
 }
 
 #[derive(Copy,Clone,Debug)]
