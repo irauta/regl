@@ -1,8 +1,13 @@
 
 macro_rules! glcall {
-    ($call:expr) => ({
+    ($gl_func:ident($($param:expr),*)) => ({
         use ::gl::*;
-        let result = unsafe { $call };
+
+        // Debug print the call:
+        // println!("{}", stringify!($gl_func));
+        // $( println!("\t{} = {:?}", stringify!($param), $param); )*
+
+        let result = unsafe { $gl_func($($param),*) };
         let error = unsafe { ::gl::GetError() };
         if error != 0 {
             let error_type = match error {
@@ -16,7 +21,8 @@ macro_rules! glcall {
                 _ => "Unrecognized error",
             };
             // Could panic too - except probably not a good idea within drop()
-            println!("OpenGL error: {} ({}) caused by {}", error_type, error, stringify!($call));
+            print!("OpenGL error: {} ({}) caused by {}", error_type, error, stringify!($gl_func));
+            $( println!("\t{:?} ", $param); )*
         }
         // println!("OpenGL call {:?}", stringify!($call));
         result
