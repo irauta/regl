@@ -9,6 +9,7 @@ mod id;
 mod tracker;
 mod resource;
 mod context;
+mod options;
 mod buffer;
 mod framebuffer;
 mod vertex_array;
@@ -24,6 +25,7 @@ pub use gl::load_with;
 
 pub use error::ReglError;
 pub use context::{Context,PrimitiveMode};
+pub use options::RenderOption;
 pub use buffer::{Buffer,BufferTarget,BufferUsage};
 pub use framebuffer::Framebuffer;
 pub use vertex_array::{VertexArray,VertexAttributeType,VertexAttribute};

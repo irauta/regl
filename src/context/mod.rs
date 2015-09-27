@@ -5,6 +5,7 @@ use std::rc::Rc;
 use ::gl::types::{GLenum,GLint,GLsizei};
 use self::shared::{SharedContext,new_shared_context};
 use ::id::{Id,IdGenerator,GenerateId};
+use ::options::{self,RenderOption};
 use ::resource::ResourceCreationSupport;
 use ::buffer::BufferCreationSupport;
 use ::framebuffer::{self,Framebuffer,FramebufferInternal};
@@ -45,6 +46,10 @@ impl Context {
 
     pub fn default_framebuffer(&self) -> &Framebuffer {
         &self.default_framebuffer
+    }
+
+    pub fn set_option(option: RenderOption) {
+        options::set_option(option)
     }
 
     pub fn draw(
