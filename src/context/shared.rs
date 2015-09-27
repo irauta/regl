@@ -1,6 +1,6 @@
 
 use ::id::Id;
-use ::tracker::{SimpleTracker,BindIf};
+use ::tracker::{SimpleTracker,BindIf,BindNone};
 use ::framebuffer::{FramebufferSupport,DrawFramebufferTag};
 use ::buffer::{BufferSupport,VertexBufferTag,IndexBufferTag,UniformBufferTag};
 use ::vertex_array::{VertexArray,VertexArraySupport};
@@ -49,6 +49,12 @@ impl BindIf<VertexBufferTag> for SharedContext {
 impl BindIf<IndexBufferTag> for SharedContext {
     fn bind_if(&self, uid: &Id, bind: &Fn()) {
         self.index_buffer_tracker.bind_if(uid, bind)
+    }
+}
+
+impl BindNone<IndexBufferTag> for SharedContext {
+    fn bind_none(&self) {
+        self.index_buffer_tracker.bind_none()
     }
 }
 

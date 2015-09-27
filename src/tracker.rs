@@ -20,10 +20,18 @@ impl SimpleTracker {
             self.current.set(uid.weak());
         }
     }
+
+    pub fn bind_none(&self) {
+        self.current.set(WeakId::empty());
+    }
 }
 
 /// The type parameter on the trait is not actively used, but works as a discriminator,
 /// so that a single struct can implement this trait for several types.
 pub trait BindIf<T> {
     fn bind_if(&self, uid: &Id, bind: &Fn());
+}
+
+pub trait BindNone<T> {
+    fn bind_none(&self);
 }
