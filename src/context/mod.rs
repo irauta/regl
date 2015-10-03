@@ -55,7 +55,7 @@ impl Context {
         &self.default_framebuffer
     }
 
-    pub fn set_option(option: RenderOption) {
+    pub fn set_option(&self, option: RenderOption) {
         options::set_option(option)
     }
 
