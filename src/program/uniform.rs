@@ -20,10 +20,10 @@ pub struct Uniform {
     pub size: i32
 }
 
-fn uniform(gl_uniform: GlUniform) -> Uniform {
+fn uniform(gl_uniform: GlUniform, location: i32) -> Uniform {
     Uniform {
         name: gl_uniform.name,
-        location: 0,
+        location: location,
         uniform_type: (gl_uniform.uniform_type as GLenum).into(),
         size: gl_uniform.size,
     }
@@ -115,8 +115,11 @@ pub fn get_uniform_info(program_id: GLuint) -> UniformInfo {
     let mut blocks = get_uniform_blocks(program_id);
     for gl_uniform in gl_uniforms.into_iter() {
         if gl_uniform.block_index < 0 {
-            //let location = program.get_uniform_location(&gl_uniform.name[..]);
-            globals.push(uniform(gl_uniform));
+            let location = match get_uniform_location(program_id, &gl_uniform.name[..]) {
+                Ok(location) => location,
+                Err(_) => unreachable!("GLSL uniform name {} isn't a valid C string", gl_uniform.name),
+            };
+            globals.push(uniform(gl_uniform, location));
         }
         else {
             let index = gl_uniform.block_index as usize;
