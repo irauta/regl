@@ -23,6 +23,7 @@ macro_rules! glcall {
             // Could panic too - except probably not a good idea within drop()
             print!("OpenGL error: {} ({}) caused by {}", error_type, error, stringify!($gl_func));
             $( println!("\t{:?} ", $param); )*
+            println!("at {}:{}", file!(), line!());
         }
         // println!("OpenGL call {:?}", stringify!($call));
         result
