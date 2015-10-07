@@ -59,6 +59,10 @@ impl Context {
         options::set_option(option)
     }
 
+    pub fn viewport(&self, x: i32, y: i32, width: i32, height: i32) {
+        glcall!(Viewport(x, y, width, height));
+    }
+
     pub fn draw(
             &self,
             program: &Program,
