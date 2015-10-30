@@ -82,14 +82,14 @@ struct StoredVertexAttribute {
 }
 
 impl VertexArray {
-    pub fn new<C: ResourceCreationSupport>(support: &mut C, attributes: &[VertexAttribute], index_buffer: Option<&Buffer>) -> ReglResult<VertexArray> {
+    pub fn new<'a, C: ResourceCreationSupport, I: IntoIterator<Item=&'a VertexAttribute<'a>>>(support: &mut C, attributes: I, index_buffer: Option<&Buffer>) -> ReglResult<VertexArray> {
         let mut gl_id = 0;
         glcall!(GenVertexArrays(1, &mut gl_id));
         let vertex_array = VertexArray {
             shared_context: support.get_shared_context(),
             uid: support.generate_id(),
             gl_id: gl_id,
-            attributes: attributes.iter().map(into_stored).collect(),
+            attributes: attributes.into_iter().map(into_stored).collect(),
             index_buffer: index_buffer.map(|b| get_base_buffer(b).clone()),
         };
         vertex_array.bind();
