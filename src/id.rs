@@ -1,5 +1,5 @@
 
-use std::cmp::{PartialEq,Eq};
+use std::cmp::{PartialEq, Eq};
 
 /// Helper alias
 type IdValue = u32;
@@ -19,7 +19,7 @@ pub struct Id {
 
 impl Id {
     pub fn weak(&self) -> WeakId {
-        WeakId { id: self.unique_id, }
+        WeakId { id: self.unique_id }
     }
 }
 
@@ -46,7 +46,7 @@ pub struct WeakId {
 impl WeakId {
     /// Returns a WeakId that is not equal with any Id.
     pub fn empty() -> WeakId {
-        WeakId { id: 0, }
+        WeakId { id: 0 }
     }
 }
 
@@ -80,7 +80,7 @@ impl IdGenerator {
     /// Create a new Id.
     pub fn generate_id(&mut self) -> Id {
         self.counter += 1;
-        Id { unique_id: self.counter, }
+        Id { unique_id: self.counter }
     }
 }
 

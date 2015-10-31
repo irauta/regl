@@ -2,20 +2,21 @@
 use std::rc::Rc;
 use std::fmt::Debug;
 use std::mem::size_of;
-use ::gl::types::{GLenum,GLsizeiptr,GLintptr,GLvoid};
-use ::id::{Id,GenerateId};
-use ::ReglResult;
-use ::ReglError;
-use ::GlId;
-use ::tracker::BindIf;
-use ::resource::ResourceCreationSupport;
-use ::vertex_array::{VertexArray,bind_vertex_array};
+use gl::types::{GLenum, GLsizeiptr, GLintptr, GLvoid};
+use id::{Id, GenerateId};
+use ReglResult;
+use ReglError;
+use GlId;
+use tracker::BindIf;
+use resource::ResourceCreationSupport;
+use vertex_array::{VertexArray, bind_vertex_array};
 
 pub trait BufferCreationSupport : ResourceCreationSupport {
     fn get_default_vertex_array(&mut self) -> Rc<VertexArray>;
 }
 
-pub trait BufferSupport : BindIf<VertexBufferTag> + BindIf<IndexBufferTag> + BindIf<UniformBufferTag> + Debug {}
+pub trait BufferSupport : BindIf<VertexBufferTag> + BindIf<IndexBufferTag>
+    + BindIf<UniformBufferTag> + Debug {}
 
 pub trait UpdateBuffer {
 
@@ -66,9 +67,18 @@ impl BaseBuffer {
 
     pub fn bind_target(&self, target: BufferTarget) {
         match target {
-            BufferTarget::VertexBuffer => BindIf::<VertexBufferTag>::bind_if(&*self.shared_context, &self.uid, &|| self.gl_bind(target)),
-            BufferTarget::IndexBuffer => BindIf::<IndexBufferTag>::bind_if(&*self.shared_context, &self.uid, &|| self.gl_bind(target)),
-            BufferTarget::UniformBuffer => BindIf::<UniformBufferTag>::bind_if(&*self.shared_context, &self.uid, &|| self.gl_bind(target)),
+            BufferTarget::VertexBuffer =>
+                BindIf::<VertexBufferTag>::bind_if(&*self.shared_context,
+                                                   &self.uid,
+                                                   &|| self.gl_bind(target)),
+            BufferTarget::IndexBuffer =>
+                BindIf::<IndexBufferTag>::bind_if(&*self.shared_context,
+                                                  &self.uid,
+                                                  &|| self.gl_bind(target)),
+            BufferTarget::UniformBuffer =>
+                BindIf::<UniformBufferTag>::bind_if(&*self.shared_context,
+                                                    &self.uid,
+                                                    &|| self.gl_bind(target)),
         }
     }
 
@@ -85,7 +95,10 @@ impl BaseBuffer {
             return Err(ReglError::BufferDataOutOfRange);
         }
         self.bind_default();
-        glcall!(BufferSubData(gl_target(self.target), byte_offset as GLintptr, data_len, data.as_ptr() as *const GLvoid));
+        glcall!(BufferSubData(gl_target(self.target),
+                              byte_offset as GLintptr,
+                              data_len,
+                              data.as_ptr() as *const GLvoid));
         Ok(())
     }
 
@@ -106,7 +119,10 @@ impl BaseBuffer {
         let data_len = len_in_bytes(data);
         assert_eq!(self.data_len, data_len as usize);
         self.bind_default();
-        glcall!(BufferData(gl_target(self.target), data_len, data.as_ptr() as *const GLvoid, gl_usage(self.usage)))
+        glcall!(BufferData(gl_target(self.target),
+                           data_len,
+                           data.as_ptr() as *const GLvoid,
+                           gl_usage(self.usage)))
     }
 
     fn gl_bind(&self, target: BufferTarget) {
@@ -122,11 +138,15 @@ impl Drop for BaseBuffer {
 
 #[derive(Debug)]
 pub struct Buffer {
-    base_buffer: Rc<BaseBuffer>
+    base_buffer: Rc<BaseBuffer>,
 }
 
 impl Buffer {
-    pub fn new<C: BufferCreationSupport, T>(support: &mut C, target: BufferTarget, usage: BufferUsage, data: &[T]) -> ReglResult<Buffer> {
+    pub fn new<C: BufferCreationSupport, T>(support: &mut C,
+                                            target: BufferTarget,
+                                            usage: BufferUsage,
+                                            data: &[T])
+                                            -> ReglResult<Buffer> {
         let mut gl_id = 0;
         glcall!(GenBuffers(1, &mut gl_id));
         let base_buffer = BaseBuffer {

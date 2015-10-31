@@ -1,10 +1,10 @@
 
 use std::ffi::CString;
-use ::gl::types::{GLenum,GLint};
-use ::GlId;
-use ::resource::ResourceCreationSupport;
-use ::ReglResult;
-use ::ReglError;
+use gl::types::{GLenum, GLint};
+use GlId;
+use resource::ResourceCreationSupport;
+use ReglResult;
+use ReglError;
 
 pub trait ShaderCreationSupport : ResourceCreationSupport {
     fn validate_after_compilation(&self) -> bool;
@@ -21,7 +21,7 @@ pub enum ShaderType {
 }
 
 #[derive(Debug,Clone,Copy)]
-pub struct ShaderSource<'a> (pub ShaderType, pub &'a str);
+pub struct ShaderSource<'a>(pub ShaderType, pub &'a str);
 
 #[derive(Debug)]
 pub struct Shader {
@@ -29,7 +29,9 @@ pub struct Shader {
 }
 
 impl Shader {
-    pub fn new<C: ShaderCreationSupport>(support: &mut C, shader_source: &ShaderSource) -> ReglResult<Shader> {
+    pub fn new<C: ShaderCreationSupport>(support: &mut C,
+                                         shader_source: &ShaderSource)
+                                         -> ReglResult<Shader> {
         let gl_id = glcall!(CreateShader(gl_shader_type(shader_source.0)));
 
         try!(add_shader_source(gl_id, shader_source.1));
@@ -38,9 +40,7 @@ impl Shader {
             return Err(ReglError::ShaderCompilationError(info_log(gl_id)));
         }
 
-        Ok(Shader {
-            gl_id: gl_id,
-        })
+        Ok(Shader { gl_id: gl_id })
     }
 
     pub fn info_log(&self) -> String {

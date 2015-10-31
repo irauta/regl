@@ -1,7 +1,7 @@
 
 use std::ffi::CString;
-use ::gl::types::{GLuint,GLenum};
-use ::ReglResult;
+use gl::types::{GLuint, GLenum};
+use ReglResult;
 use super::gl_program_value;
 
 #[derive(Debug,Clone,Copy)]
@@ -57,40 +57,38 @@ impl AttributeInfo {
 pub fn get_attribute_info(program_id: GLuint) -> AttributeInfo {
     let attr_count = gl_program_value(program_id, ::gl::ACTIVE_ATTRIBUTES);
     if attr_count == 0 {
-        return AttributeInfo {
-            attributes: vec![],
-        };
+        return AttributeInfo { attributes: vec![] };
     }
     let max_length = gl_program_value(program_id, ::gl::ACTIVE_ATTRIBUTE_MAX_LENGTH);
     let mut name_buffer = vec![0u8; max_length as usize];
 
-    let attributes = (0..attr_count).map(|i| {
-        let mut actual_length = 0;
-        let mut size = 0;
-        let mut gl_type = 0;
-        let name_buffer_ptr = name_buffer.as_mut_ptr() as *mut i8;
+    let attributes = (0..attr_count)
+                         .map(|i| make_attribute(program_id, i, &mut name_buffer))
+                         .collect();
 
-        glcall!(GetActiveAttrib(
-            program_id,
-            i as u32,
-            name_buffer.len() as i32,
-            &mut actual_length,
-            &mut size,
-            &mut gl_type,
-            name_buffer_ptr
-        ));
-        let location = glcall!(GetAttribLocation(program_id, name_buffer_ptr));
+    AttributeInfo { attributes: attributes }
+}
 
-        ShaderAttribute {
-            name: String::from_utf8_lossy(&name_buffer[0..actual_length as usize]).into_owned(),
-            location: location,
-            attribute_type: gl_type.into(),
-            size: size,
-        }
-    }).collect();
+fn make_attribute(program_id: GLuint, index: i32, name_buffer: &mut [u8]) -> ShaderAttribute {
+    let mut actual_length = 0;
+    let mut size = 0;
+    let mut gl_type = 0;
+    let name_buffer_ptr = name_buffer.as_mut_ptr() as *mut i8;
 
-    AttributeInfo {
-        attributes: attributes,
+    glcall!(GetActiveAttrib(program_id,
+                            index as u32,
+                            name_buffer.len() as i32,
+                            &mut actual_length,
+                            &mut size,
+                            &mut gl_type,
+                            name_buffer_ptr));
+    let location = glcall!(GetAttribLocation(program_id, name_buffer_ptr));
+
+    ShaderAttribute {
+        name: String::from_utf8_lossy(&name_buffer[0..actual_length as usize]).into_owned(),
+        location: location,
+        attribute_type: gl_type.into(),
+        size: size,
     }
 }
 
@@ -123,7 +121,7 @@ impl From<GLenum> for ShaderAttributeType {
             ::gl::UNSIGNED_INT_VEC2 => ShaderAttributeType::UnsignedIntVec2,
             ::gl::UNSIGNED_INT_VEC3 => ShaderAttributeType::UnsignedIntVec3,
             ::gl::UNSIGNED_INT_VEC4 => ShaderAttributeType::UnsignedIntVec4,
-            other => ShaderAttributeType::UnrecognizedType(other)
+            other => ShaderAttributeType::UnrecognizedType(other),
         }
     }
 }

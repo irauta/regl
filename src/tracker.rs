@@ -1,6 +1,6 @@
 
 use std::cell::Cell;
-use ::id::{Id,WeakId};
+use id::{Id, WeakId};
 
 #[derive(Debug)]
 pub struct SimpleTracker {
@@ -9,9 +9,7 @@ pub struct SimpleTracker {
 
 impl SimpleTracker {
     pub fn new() -> SimpleTracker {
-        SimpleTracker {
-            current: Cell::new(WeakId::empty()),
-        }
+        SimpleTracker { current: Cell::new(WeakId::empty()) }
     }
 
     pub fn bind_if(&self, uid: &Id, bind: &Fn()) {

@@ -1,11 +1,12 @@
 
 use std::ffi::CString;
-use ::gl::types::{GLenum,GLint,GLuint,GLsizei};
-use ::ReglResult;
-use ::ReglError;
+use gl::types::{GLenum, GLint, GLuint, GLsizei};
+use ReglResult;
+use ReglError;
 use super::gl_program_value;
 
-// To see the definition of UniformType, look at the bottom of file. It's the really big enum.
+// To see the definition of UniformType, look at the bottom of file. It's the
+// really big enum.
 
 #[derive(Debug)]
 pub struct Uniform {
@@ -17,7 +18,7 @@ pub struct Uniform {
     /// Data type of the uniform.
     pub uniform_type: UniformType,
     /// How many instances of the type this uniform contains. Length of an array so to speak.
-    pub size: i32
+    pub size: i32,
 }
 
 fn uniform(gl_uniform: GlUniform, location: i32) -> Uniform {
@@ -51,7 +52,7 @@ pub struct InterfaceBlock {
     /// See GL_UNIFORM_BLOCK_DATA_SIZE
     pub data_size: i32,
     /// The uniforms contained by this block.
-    pub uniforms: Vec<BlockUniform>
+    pub uniforms: Vec<BlockUniform>,
 }
 
 impl InterfaceBlock {
@@ -85,7 +86,7 @@ pub struct UniformInfo {
     /// Global uniforms, not in interface blocks.
     pub globals: Vec<Uniform>,
     /// Interface block definitions, may contain several uniforms themselves.
-    pub blocks: Vec<InterfaceBlock>
+    pub blocks: Vec<InterfaceBlock>,
 }
 
 impl UniformInfo {
@@ -117,11 +118,11 @@ pub fn get_uniform_info(program_id: GLuint) -> UniformInfo {
         if gl_uniform.block_index < 0 {
             let location = match get_uniform_location(program_id, &gl_uniform.name[..]) {
                 Ok(location) => location,
-                Err(_) => unreachable!("GLSL uniform name {} isn't a valid C string", gl_uniform.name),
+                Err(_) => unreachable!("GLSL uniform name {} isn't a valid C string",
+                                       gl_uniform.name),
             };
             globals.push(uniform(gl_uniform, location));
-        }
-        else {
+        } else {
             let index = gl_uniform.block_index as usize;
             blocks[index].uniforms.push(block_uniform(gl_uniform));
         }
@@ -139,14 +140,21 @@ fn get_gl_uniforms(program_id: GLuint) -> Vec<GlUniform> {
     }
     let indices: Vec<GLuint> = (0..count as GLuint).collect();
     let mut intvalues = vec![0; count];
-    gl_uniform_properties(program_id, &indices, ::gl::UNIFORM_NAME_LENGTH, &mut intvalues);
+    gl_uniform_properties(program_id,
+                          &indices,
+                          ::gl::UNIFORM_NAME_LENGTH,
+                          &mut intvalues);
 
-    let mut uniforms: Vec<GlUniform> = intvalues.iter().enumerate().map(
-        |(index, name_length)| GlUniform {
+    let make_named: &Fn((usize, &i32)) -> GlUniform = &|(index, name_length)| {
+        GlUniform {
             name: gl_uniform_name(program_id, index as GLuint, *name_length),
-            .. Default::default()
+            ..Default::default()
         }
-    ).collect();
+    };
+    let mut uniforms: Vec<GlUniform> = intvalues.iter()
+                                                .enumerate()
+                                                .map(make_named)
+                                                .collect();
     // Can't return uniforms before the closure using them is out of scope
     {
         let mut fill_info = |gl_property, uniform_field_fn: &Fn(&mut GlUniform) -> &mut GLint| {
@@ -165,35 +173,42 @@ fn get_gl_uniforms(program_id: GLuint) -> Vec<GlUniform> {
     uniforms
 }
 
-fn gl_uniform_properties(program_id: GLuint, indices: &Vec<GLuint>, property: GLenum, intvalues: &mut Vec<GLint>) {
+fn gl_uniform_properties(program_id: GLuint,
+                         indices: &Vec<GLuint>,
+                         property: GLenum,
+                         intvalues: &mut Vec<GLint>) {
     assert_eq!(indices.len(), intvalues.len());
-    glcall!(GetActiveUniformsiv(
-        program_id,
-        indices.len() as GLsizei,
-        indices.as_ptr(),
-        property,
-        intvalues.as_mut_ptr()
-    ));
+    glcall!(GetActiveUniformsiv(program_id,
+                                indices.len() as GLsizei,
+                                indices.as_ptr(),
+                                property,
+                                intvalues.as_mut_ptr()));
 }
 
 fn gl_uniform_name(program_id: GLuint, index: GLuint, length: GLsizei) -> String {
     let mut name_bytes = vec![0u8; length as usize];
     let name_bytes_ptr = name_bytes.as_mut_ptr() as *mut i8;
     let mut actual_length = 0;
-    glcall!(GetActiveUniformName(program_id, index, length, &mut actual_length, name_bytes_ptr));
+    glcall!(GetActiveUniformName(program_id,
+                                 index,
+                                 length,
+                                 &mut actual_length,
+                                 name_bytes_ptr));
     String::from_utf8_lossy(&name_bytes[0..actual_length as usize]).into_owned()
 }
 
 fn get_uniform_blocks(program_id: GLuint) -> Vec<InterfaceBlock> {
     let count = gl_program_value(program_id, ::gl::ACTIVE_UNIFORM_BLOCKS) as u32;
-    (0..count).map(|index| {
-        InterfaceBlock {
-            index: index,
-            name: gl_block_name(program_id, index),
-            data_size: gl_block_property(program_id, index, ::gl::UNIFORM_BLOCK_DATA_SIZE),
-            uniforms: vec![],
-        }
-    }).collect()
+    (0..count)
+        .map(|index| {
+            InterfaceBlock {
+                index: index,
+                name: gl_block_name(program_id, index),
+                data_size: gl_block_property(program_id, index, ::gl::UNIFORM_BLOCK_DATA_SIZE),
+                uniforms: vec![],
+            }
+        })
+        .collect()
 }
 
 fn gl_block_name(program_id: GLuint, index: GLuint) -> String {
@@ -201,13 +216,11 @@ fn gl_block_name(program_id: GLuint, index: GLuint) -> String {
     let mut name_bytes = vec![0u8; length as usize];
     let name_bytes_ptr = name_bytes.as_mut_ptr() as *mut i8;
     let mut actual_length = 0;
-    glcall!(GetActiveUniformBlockName(
-        program_id,
-        index,
-        name_bytes.len() as i32,
-        &mut actual_length,
-        name_bytes_ptr
-    ));
+    glcall!(GetActiveUniformBlockName(program_id,
+                                      index,
+                                      name_bytes.len() as i32,
+                                      &mut actual_length,
+                                      name_bytes_ptr));
     String::from_utf8_lossy(&name_bytes[0..actual_length as usize]).into_owned()
 }
 
@@ -222,18 +235,23 @@ pub fn get_uniform_location(program_id: GLuint, name: &str) -> ReglResult<i32> {
     Ok(glcall!(GetUniformLocation(program_id, c_name.as_ptr())))
 }
 
-pub fn uniform_value_f32(location: i32, uniform_type: UniformType, count: u32, values: &[f32]) -> ReglResult<()> {
+pub fn uniform_value_f32(location: i32,
+                         uniform_type: UniformType,
+                         count: u32,
+                         values: &[f32])
+                         -> ReglResult<()> {
     match uniform_type {
-        UniformType::FloatMat2
-        | UniformType::FloatMat3
-        | UniformType::FloatMat4
-        | UniformType::FloatMat2x3
-        | UniformType::FloatMat2x4
-        | UniformType::FloatMat3x2
-        | UniformType::FloatMat3x4
-        | UniformType::FloatMat4x2
-        | UniformType::FloatMat4x3 => return uniform_value_matrix(location, uniform_type, count, values, false),
-        _ => ()
+        UniformType::FloatMat2 |
+        UniformType::FloatMat3 |
+        UniformType::FloatMat4 |
+        UniformType::FloatMat2x3 |
+        UniformType::FloatMat2x4 |
+        UniformType::FloatMat3x2 |
+        UniformType::FloatMat3x4 |
+        UniformType::FloatMat4x2 |
+        UniformType::FloatMat4x3 =>
+            return uniform_value_matrix(location, uniform_type, count, values, false),
+        _ => (),
     }
     let components = match uniform_type {
         UniformType::Bool | UniformType::Float => 1,
@@ -248,54 +266,58 @@ pub fn uniform_value_f32(location: i32, uniform_type: UniformType, count: u32, v
         2 => glcall!(Uniform2fv(location, count, values.as_ptr())),
         3 => glcall!(Uniform3fv(location, count, values.as_ptr())),
         4 => glcall!(Uniform4fv(location, count, values.as_ptr())),
-        _ => unreachable!()
-    };
+        _ => unreachable!(),
+    }
     Ok(())
 }
 
-pub fn uniform_value_i32(location: i32, uniform_type: UniformType, count: u32, values: &[i32]) -> ReglResult<()> {
+pub fn uniform_value_i32(location: i32,
+                         uniform_type: UniformType,
+                         count: u32,
+                         values: &[i32])
+                         -> ReglResult<()> {
     let components = match uniform_type {
         UniformType::Bool | UniformType::Int => 1,
         UniformType::BoolVec2 | UniformType::IntVec2 => 2,
         UniformType::BoolVec3 | UniformType::IntVec3 => 3,
         UniformType::BoolVec4 | UniformType::IntVec4 => 4,
 
-        UniformType::Sampler1d
-        | UniformType::Sampler2d
-        | UniformType::Sampler3d
-        | UniformType::SamplerCube
-        | UniformType::Sampler1dShadow
-        | UniformType::Sampler2dShadow
-        | UniformType::Sampler1dArray
-        | UniformType::Sampler2dArray
-        | UniformType::Sampler1dArrayShadow
-        | UniformType::Sampler2dArrayShadow
-        | UniformType::Sampler2dMultisample
-        | UniformType::Sampler2dMultisampleArray
-        | UniformType::SamplerCubeShadow
-        | UniformType::SamplerBuffer
-        | UniformType::Sampler2dRect
-        | UniformType::Sampler2dRectShadow
-        | UniformType::IntSampler1d
-        | UniformType::IntSampler2d
-        | UniformType::IntSampler3d
-        | UniformType::IntSamplerCube
-        | UniformType::IntSampler1dArray
-        | UniformType::IntSampler2dArray
-        | UniformType::IntSampler2dMultisample
-        | UniformType::IntSampler2dMultisampleArray
-        | UniformType::IntSamplerBuffer
-        | UniformType::IntSampler2dRect
-        | UniformType::UnsignedIntSampler1d
-        | UniformType::UnsignedIntSampler2d
-        | UniformType::UnsignedIntSampler3d
-        | UniformType::UnsignedIntSamplerCube
-        | UniformType::UnsignedIntSampler1dArray
-        | UniformType::UnsignedIntSampler2dArray
-        | UniformType::UnsignedIntSampler2dMultisample
-        | UniformType::UnsignedIntSampler2dMultisampleArray
-        | UniformType::UnsignedIntSamplerBuffer
-        | UniformType::UnsignedIntSampler2dRect => 1,
+        UniformType::Sampler1d |
+        UniformType::Sampler2d |
+        UniformType::Sampler3d |
+        UniformType::SamplerCube |
+        UniformType::Sampler1dShadow |
+        UniformType::Sampler2dShadow |
+        UniformType::Sampler1dArray |
+        UniformType::Sampler2dArray |
+        UniformType::Sampler1dArrayShadow |
+        UniformType::Sampler2dArrayShadow |
+        UniformType::Sampler2dMultisample |
+        UniformType::Sampler2dMultisampleArray |
+        UniformType::SamplerCubeShadow |
+        UniformType::SamplerBuffer |
+        UniformType::Sampler2dRect |
+        UniformType::Sampler2dRectShadow |
+        UniformType::IntSampler1d |
+        UniformType::IntSampler2d |
+        UniformType::IntSampler3d |
+        UniformType::IntSamplerCube |
+        UniformType::IntSampler1dArray |
+        UniformType::IntSampler2dArray |
+        UniformType::IntSampler2dMultisample |
+        UniformType::IntSampler2dMultisampleArray |
+        UniformType::IntSamplerBuffer |
+        UniformType::IntSampler2dRect |
+        UniformType::UnsignedIntSampler1d |
+        UniformType::UnsignedIntSampler2d |
+        UniformType::UnsignedIntSampler3d |
+        UniformType::UnsignedIntSamplerCube |
+        UniformType::UnsignedIntSampler1dArray |
+        UniformType::UnsignedIntSampler2dArray |
+        UniformType::UnsignedIntSampler2dMultisample |
+        UniformType::UnsignedIntSampler2dMultisampleArray |
+        UniformType::UnsignedIntSamplerBuffer |
+        UniformType::UnsignedIntSampler2dRect => 1,
 
         _ => return Err(ReglError::UniformTypeMismatch),
     };
@@ -306,12 +328,16 @@ pub fn uniform_value_i32(location: i32, uniform_type: UniformType, count: u32, v
         2 => glcall!(Uniform2iv(location, count, values.as_ptr())),
         3 => glcall!(Uniform3iv(location, count, values.as_ptr())),
         4 => glcall!(Uniform4iv(location, count, values.as_ptr())),
-        _ => unreachable!()
-    };
+        _ => unreachable!(),
+    }
     Ok(())
 }
 
-pub fn uniform_value_u32(location: i32, uniform_type: UniformType, count: u32, values: &[u32]) -> ReglResult<()> {
+pub fn uniform_value_u32(location: i32,
+                         uniform_type: UniformType,
+                         count: u32,
+                         values: &[u32])
+                         -> ReglResult<()> {
     let components = match uniform_type {
         UniformType::Bool | UniformType::UnsignedInt => 1,
         UniformType::BoolVec2 | UniformType::UnsignedIntVec2 => 2,
@@ -326,13 +352,22 @@ pub fn uniform_value_u32(location: i32, uniform_type: UniformType, count: u32, v
         2 => glcall!(Uniform2uiv(location, count, values.as_ptr())),
         3 => glcall!(Uniform3uiv(location, count, values.as_ptr())),
         4 => glcall!(Uniform4uiv(location, count, values.as_ptr())),
-        _ => unreachable!()
-    };
+        _ => unreachable!(),
+    }
     Ok(())
 }
 
-pub fn uniform_value_matrix(location: i32, uniform_type: UniformType, count: u32, values: &[f32], transpose: bool) -> ReglResult<()> {
-    let transpose = if transpose { ::gl::TRUE } else { ::gl::FALSE };
+pub fn uniform_value_matrix(location: i32,
+                            uniform_type: UniformType,
+                            count: u32,
+                            values: &[f32],
+                            transpose: bool)
+                            -> ReglResult<()> {
+    let transpose = if transpose {
+        ::gl::TRUE
+    } else {
+        ::gl::FALSE
+    };
     let components = match uniform_type {
         UniformType::FloatMat2 => 2 * 2,
         UniformType::FloatMat3 => 3 * 3,
@@ -348,17 +383,26 @@ pub fn uniform_value_matrix(location: i32, uniform_type: UniformType, count: u32
     try!(check_uniform_element_count(components, count, values));
     let count = count as i32;
     match uniform_type {
-        UniformType::FloatMat2 => glcall!(UniformMatrix2fv(location, count, transpose, values.as_ptr())),
-        UniformType::FloatMat3 => glcall!(UniformMatrix3fv(location, count, transpose, values.as_ptr())),
-        UniformType::FloatMat4 => glcall!(UniformMatrix4fv(location, count, transpose, values.as_ptr())),
-        UniformType::FloatMat2x3 => glcall!(UniformMatrix2x3fv(location, count, transpose, values.as_ptr())),
-        UniformType::FloatMat2x4 => glcall!(UniformMatrix2x4fv(location, count, transpose, values.as_ptr())),
-        UniformType::FloatMat3x2 => glcall!(UniformMatrix3x2fv(location, count, transpose, values.as_ptr())),
-        UniformType::FloatMat3x4 => glcall!(UniformMatrix3x4fv(location, count, transpose, values.as_ptr())),
-        UniformType::FloatMat4x2 => glcall!(UniformMatrix4x2fv(location, count, transpose, values.as_ptr())),
-        UniformType::FloatMat4x3 => glcall!(UniformMatrix4x3fv(location, count, transpose, values.as_ptr())),
+        UniformType::FloatMat2 =>
+            glcall!(UniformMatrix2fv(location, count, transpose, values.as_ptr())),
+        UniformType::FloatMat3 =>
+            glcall!(UniformMatrix3fv(location, count, transpose, values.as_ptr())),
+        UniformType::FloatMat4 =>
+            glcall!(UniformMatrix4fv(location, count, transpose, values.as_ptr())),
+        UniformType::FloatMat2x3 =>
+            glcall!(UniformMatrix2x3fv(location, count, transpose, values.as_ptr())),
+        UniformType::FloatMat2x4 =>
+            glcall!(UniformMatrix2x4fv(location, count, transpose, values.as_ptr())),
+        UniformType::FloatMat3x2 =>
+            glcall!(UniformMatrix3x2fv(location, count, transpose, values.as_ptr())),
+        UniformType::FloatMat3x4 =>
+            glcall!(UniformMatrix3x4fv(location, count, transpose, values.as_ptr())),
+        UniformType::FloatMat4x2 =>
+            glcall!(UniformMatrix4x2fv(location, count, transpose, values.as_ptr())),
+        UniformType::FloatMat4x3 =>
+            glcall!(UniformMatrix4x3fv(location, count, transpose, values.as_ptr())),
         _ => unreachable!(),
-    };
+    }
     Ok(())
 }
 
@@ -433,7 +477,7 @@ pub enum UniformType {
     UnsignedIntSampler2dMultisampleArray,
     UnsignedIntSamplerBuffer,
     UnsignedIntSampler2dRect,
-    UnrecognizedType(u32)
+    UnrecognizedType(u32),
 }
 
 impl From<GLenum> for UniformType {
@@ -496,11 +540,13 @@ impl From<GLenum> for UniformType {
             ::gl::UNSIGNED_INT_SAMPLER_CUBE => UniformType::UnsignedIntSamplerCube,
             ::gl::UNSIGNED_INT_SAMPLER_1D_ARRAY => UniformType::UnsignedIntSampler1dArray,
             ::gl::UNSIGNED_INT_SAMPLER_2D_ARRAY => UniformType::UnsignedIntSampler2dArray,
-            ::gl::UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE => UniformType::UnsignedIntSampler2dMultisample,
-            ::gl::UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE_ARRAY => UniformType::UnsignedIntSampler2dMultisampleArray,
+            ::gl::UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE =>
+                UniformType::UnsignedIntSampler2dMultisample,
+            ::gl::UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE_ARRAY =>
+                UniformType::UnsignedIntSampler2dMultisampleArray,
             ::gl::UNSIGNED_INT_SAMPLER_BUFFER => UniformType::UnsignedIntSamplerBuffer,
             ::gl::UNSIGNED_INT_SAMPLER_2D_RECT => UniformType::UnsignedIntSampler2dRect,
-            other => UniformType::UnrecognizedType(other)
+            other => UniformType::UnrecognizedType(other),
         }
     }
 }

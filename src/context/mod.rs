@@ -2,16 +2,16 @@
 pub mod shared;
 
 use std::rc::Rc;
-use ::gl::types::{GLenum,GLint,GLsizei,GLvoid};
-use self::shared::{SharedContext,new_shared_context};
-use ::id::{Id,IdGenerator,GenerateId};
-use ::options::{self,RenderOption};
-use ::resource::ResourceCreationSupport;
-use ::buffer::BufferCreationSupport;
-use ::framebuffer::{self,Framebuffer,FramebufferInternal};
-use ::vertex_array::{self,VertexArray,VertexArrayInternal};
-use ::program::{Program,ProgramCreationSupport,ProgramInternal};
-use ::shader::ShaderCreationSupport;
+use gl::types::{GLenum, GLint, GLsizei, GLvoid};
+use self::shared::{SharedContext, new_shared_context};
+use id::{Id, IdGenerator, GenerateId};
+use options::{self, RenderOption};
+use resource::ResourceCreationSupport;
+use buffer::BufferCreationSupport;
+use framebuffer::{self, Framebuffer, FramebufferInternal};
+use vertex_array::{self, VertexArray, VertexArrayInternal};
+use program::{Program, ProgramCreationSupport, ProgramInternal};
+use shader::ShaderCreationSupport;
 
 #[derive(Debug,Clone,Copy)]
 pub enum PrimitiveMode {
@@ -40,7 +40,8 @@ impl Context {
             shared_context: Rc::new(new_shared_context()),
         };
         let default_framebuffer = framebuffer::create_default_framebuffer(&mut booter);
-        let default_vertex_array = Rc::new(vertex_array::create_default_vertex_array(&mut booter).unwrap());
+        let default_vertex_array = Rc::new(vertex_array::create_default_vertex_array(&mut booter)
+                                               .unwrap());
 
         Context {
             id_gen: booter.id_gen,
@@ -63,36 +64,36 @@ impl Context {
         glcall!(Viewport(x, y, width, height));
     }
 
-    pub fn draw(
-            &self,
-            program: &Program,
-            target: &Framebuffer,
-            vertex_array: &VertexArray,
-            mode: PrimitiveMode, first_vertex: u32, count: u32,
-        ) {
+    pub fn draw(&self,
+                program: &Program,
+                target: &Framebuffer,
+                vertex_array: &VertexArray,
+                mode: PrimitiveMode,
+                first_vertex: u32,
+                count: u32) {
         program.bind();
         target.bind();
         vertex_array.bind();
         glcall!(DrawArrays(gl_mode(mode), first_vertex as GLint, count as GLsizei));
     }
 
-    pub fn draw_indexed(
-            &self,
-            program: &Program,
-            target: &Framebuffer,
-            vertex_array: &VertexArray,
-            mode: PrimitiveMode, index_type: IndexType, base_vertex: u32, count: u32, index_offset: usize
-        ) {
+    pub fn draw_indexed(&self,
+                        program: &Program,
+                        target: &Framebuffer,
+                        vertex_array: &VertexArray,
+                        mode: PrimitiveMode,
+                        index_type: IndexType,
+                        base_vertex: u32,
+                        count: u32,
+                        index_offset: usize) {
         program.bind();
         target.bind();
         vertex_array.bind();
-        glcall!(DrawElementsBaseVertex(
-            gl_mode(mode),
-            count as GLsizei,
-            gl_type(index_type),
-            index_offset as *const GLvoid,
-            base_vertex as GLint
-        ));
+        glcall!(DrawElementsBaseVertex(gl_mode(mode),
+                                       count as GLsizei,
+                                       gl_type(index_type),
+                                       index_offset as *const GLvoid,
+                                       base_vertex as GLint));
     }
 }
 

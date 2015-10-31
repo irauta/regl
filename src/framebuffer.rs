@@ -1,11 +1,11 @@
 
 use std::rc::Rc;
 use std::fmt::Debug;
-use ::id::{Id,GenerateId};
-use ::ReglResult;
-use ::GlId;
-use ::tracker::BindIf;
-use ::resource::ResourceCreationSupport;
+use id::{Id, GenerateId};
+use ReglResult;
+use GlId;
+use tracker::BindIf;
+use resource::ResourceCreationSupport;
 
 pub trait FramebufferSupport : BindIf<DrawFramebufferTag> + Debug {
 

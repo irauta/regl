@@ -1,10 +1,10 @@
 
-use ::id::Id;
-use ::tracker::{SimpleTracker,BindIf,BindNone};
-use ::framebuffer::{FramebufferSupport,DrawFramebufferTag};
-use ::buffer::{BufferSupport,VertexBufferTag,IndexBufferTag,UniformBufferTag};
-use ::vertex_array::{VertexArray,VertexArraySupport};
-use ::program::{Program,ProgramSupport};
+use id::Id;
+use tracker::{SimpleTracker, BindIf, BindNone};
+use framebuffer::{FramebufferSupport, DrawFramebufferTag};
+use buffer::{BufferSupport, VertexBufferTag, IndexBufferTag, UniformBufferTag};
+use vertex_array::{VertexArray, VertexArraySupport};
+use program::{Program, ProgramSupport};
 
 #[derive(Debug)]
 pub struct SharedContext {

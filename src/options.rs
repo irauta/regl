@@ -1,5 +1,5 @@
 
-use ::gl::types::GLenum;
+use gl::types::GLenum;
 
 /// Rendering options.
 #[derive(Debug,Copy,Clone)]
@@ -7,7 +7,7 @@ pub enum RenderOption {
     /// GL_DEPTH_TEST
     DepthTest(bool),
     /// GL_CULL_FACE
-    CullingEnabled(bool)
+    CullingEnabled(bool),
 }
 
 pub fn set_option(option: RenderOption) {
@@ -20,8 +20,7 @@ pub fn set_option(option: RenderOption) {
 fn set_capability(cap: GLenum, enable: bool) {
     if enable {
         glcall!(Enable(cap));
-    }
-    else {
+    } else {
         glcall!(Disable(cap));
     }
 }

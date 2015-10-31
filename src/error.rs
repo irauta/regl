@@ -1,6 +1,6 @@
 
 use std::error::Error;
-use std::fmt::{self,Display};
+use std::fmt::{self, Display};
 use std::ffi::NulError;
 
 #[derive(Debug)]
@@ -36,7 +36,9 @@ impl Error for ReglError {
             ReglError::ProgramLinkingError(_) => "GLSL shader program linking failed",
             ReglError::BufferDataOutOfRange => "Tried to update buffer data beyond buffer end",
             ReglError::UniformTypeMismatch => "UniformType and type of the given data do no match",
-            ReglError::InvalidUniformValueCount => "The length of uniform value slice, the UniformType and the count parameter do not match ",
+            ReglError::InvalidUniformValueCount =>
+                "The length of uniform value slice, the UniformType and the count parameter do not \
+                 match ",
         }
     }
 }

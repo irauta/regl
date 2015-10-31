@@ -24,12 +24,12 @@ pub type ReglResult<T> = Result<T, ReglError>;
 pub use gl::load_with;
 
 pub use error::ReglError;
-pub use context::{Context,PrimitiveMode,IndexType};
+pub use context::{Context, PrimitiveMode, IndexType};
 pub use options::RenderOption;
-pub use buffer::{Buffer,BufferTarget,BufferUsage};
+pub use buffer::{Buffer, BufferTarget, BufferUsage};
 pub use framebuffer::Framebuffer;
-pub use vertex_array::{VertexArray,VertexAttributeType,VertexAttribute};
-pub use shader::{Shader,ShaderType,ShaderSource};
+pub use vertex_array::{VertexArray, VertexAttributeType, VertexAttribute};
+pub use shader::{Shader, ShaderType, ShaderSource};
 pub use program::Program;
-pub use program::{AttributeInfo,ShaderAttribute,ShaderAttributeType};
-pub use program::{UniformInfo,Uniform,InterfaceBlock,BlockUniform,UniformType};
+pub use program::{AttributeInfo, ShaderAttribute, ShaderAttributeType};
+pub use program::{UniformInfo, Uniform, InterfaceBlock, BlockUniform, UniformType};

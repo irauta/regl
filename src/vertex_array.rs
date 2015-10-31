@@ -1,15 +1,16 @@
 
 use std::rc::Rc;
 use std::fmt::Debug;
-use ::gl::types::{GLenum,GLuint,GLint,GLboolean,GLsizei,GLvoid};
-use ::id::{Id,GenerateId};
-use ::ReglResult;
-use ::GlId;
-use ::tracker::{BindIf,BindNone};
-use ::resource::ResourceCreationSupport;
-use ::buffer::{Buffer,BaseBuffer,BufferTarget,IndexBufferTag,get_base_buffer};
+use gl::types::{GLenum, GLuint, GLint, GLboolean, GLsizei, GLvoid};
+use id::{Id, GenerateId};
+use ReglResult;
+use GlId;
+use tracker::{BindIf, BindNone};
+use resource::ResourceCreationSupport;
+use buffer::{Buffer, BaseBuffer, BufferTarget, IndexBufferTag, get_base_buffer};
 
-pub trait VertexArraySupport : BindIf<VertexArray> + BindIf<IndexBufferTag> + BindNone<IndexBufferTag> + Debug {
+pub trait VertexArraySupport : BindIf<VertexArray> + BindIf<IndexBufferTag>
+    + BindNone<IndexBufferTag> + Debug {
     fn separate_ibo_binding(&self) -> bool;
 }
 
@@ -82,7 +83,13 @@ struct StoredVertexAttribute {
 }
 
 impl VertexArray {
-    pub fn new<'a, C: ResourceCreationSupport, I: IntoIterator<Item=&'a VertexAttribute<'a>>>(support: &mut C, attributes: I, index_buffer: Option<&Buffer>) -> ReglResult<VertexArray> {
+    pub fn new<'a, C, I>(support: &mut C,
+                         attributes: I,
+                         index_buffer: Option<&Buffer>)
+                         -> ReglResult<VertexArray>
+        where C: ResourceCreationSupport,
+              I: IntoIterator<Item = &'a VertexAttribute<'a>>
+    {
         let mut gl_id = 0;
         glcall!(GenVertexArrays(1, &mut gl_id));
         let vertex_array = VertexArray {
@@ -93,7 +100,8 @@ impl VertexArray {
             index_buffer: index_buffer.map(|b| get_base_buffer(b).clone()),
         };
         vertex_array.bind();
-        setup_vertex_array(&vertex_array.attributes[..], index_buffer.map(get_base_buffer));
+        setup_vertex_array(&vertex_array.attributes[..],
+                           index_buffer.map(get_base_buffer));
         Ok(vertex_array)
     }
 
@@ -105,34 +113,35 @@ impl VertexArray {
 impl VertexArrayInternal for VertexArray {
     fn bind(&self) {
         let shared_context = &*self.shared_context;
-        //self.shared_context.bind_if(&self.uid, &|| self.gl_bind());
+        // self.shared_context.bind_if(&self.uid, &|| self.gl_bind());
         BindIf::<VertexArray>::bind_if(shared_context, &self.uid, &|| self.gl_bind());
-        // Make sure the IBO tracker is up to date. Also work around the cases where index buffer
+        // Make sure the IBO tracker is up to date. Also work around the cases where
+        // index buffer
         // binding isn't part of VAO state.
         match (&self.index_buffer, shared_context.separate_ibo_binding()) {
             (&Some(ref ibo), true) => ibo.bind_as_indices_anyway(),
-            (&Some(ref ibo), false) => BindIf::<IndexBufferTag>::bind_if(shared_context, &ibo.get_id(), &|| ()),
+            (&Some(ref ibo), false) =>
+                BindIf::<IndexBufferTag>::bind_if(shared_context, &ibo.get_id(), &|| ()),
             (&None, _) => BindNone::<IndexBufferTag>::bind_none(shared_context),
         }
     }
 }
 
 /// Expects that the vertex array has already been bound
-fn setup_vertex_array(attributes: &[StoredVertexAttribute], index_buffer: Option<&Rc<BaseBuffer>>) {
+fn setup_vertex_array(attributes: &[StoredVertexAttribute],
+                      index_buffer: Option<&Rc<BaseBuffer>>) {
     if let Some(ref ibo) = index_buffer {
         ibo.bind_as_indices_anyway();
     }
     for attribute in attributes {
         attribute.vertex_buffer.bind_target(BufferTarget::VertexBuffer);
         glcall!(EnableVertexAttribArray(attribute.index));
-        glcall!(VertexAttribPointer(
-            attribute.index as GLuint,
-            attribute.size as GLint,
-            attribute_to_gl_type(attribute.attribute_type),
-            attribute.normalized as GLboolean,
-            attribute.stride as GLsizei,
-            attribute.offset as *const GLvoid
-        ));
+        glcall!(VertexAttribPointer(attribute.index as GLuint,
+                                    attribute.size as GLint,
+                                    attribute_to_gl_type(attribute.attribute_type),
+                                    attribute.normalized as GLboolean,
+                                    attribute.stride as GLsizei,
+                                    attribute.offset as *const GLvoid));
     }
 }
 
@@ -146,7 +155,8 @@ impl Drop for VertexArray {
     }
 }
 
-pub fn create_default_vertex_array<C: ResourceCreationSupport>(support: &mut C) -> ReglResult<VertexArray> {
+pub fn create_default_vertex_array<C: ResourceCreationSupport>(support: &mut C)
+                                                               -> ReglResult<VertexArray> {
     VertexArray::new(support, &[], None)
 }
 
@@ -174,6 +184,6 @@ fn attribute_to_gl_type(attribute_type: VertexAttributeType) -> GLenum {
         VertexAttributeType::Float => ::gl::FLOAT,
         VertexAttributeType::Double => ::gl::DOUBLE,
         VertexAttributeType::Int2101010Rev => ::gl::INT_2_10_10_10_REV,
-        VertexAttributeType::UnsignedInt2101010Rev => ::gl::UNSIGNED_INT_2_10_10_10_REV
+        VertexAttributeType::UnsignedInt2101010Rev => ::gl::UNSIGNED_INT_2_10_10_10_REV,
     }
 }
