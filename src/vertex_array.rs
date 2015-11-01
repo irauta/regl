@@ -1,4 +1,5 @@
 
+use std::borrow::Borrow;
 use std::rc::Rc;
 use std::fmt::Debug;
 use gl::types::{GLenum, GLuint, GLint, GLboolean, GLsizei, GLvoid};
@@ -83,12 +84,13 @@ struct StoredVertexAttribute {
 }
 
 impl VertexArray {
-    pub fn new<'a, C, I>(support: &mut C,
-                         attributes: I,
-                         index_buffer: Option<&Buffer>)
-                         -> ReglResult<VertexArray>
+    pub fn new<'a, C, I, A>(support: &mut C,
+                            attributes: I,
+                            index_buffer: Option<&Buffer>)
+                            -> ReglResult<VertexArray>
         where C: ResourceCreationSupport,
-              I: IntoIterator<Item = &'a VertexAttribute<'a>>
+              I: IntoIterator<Item = A>,
+              A: Borrow<VertexAttribute<'a>>
     {
         let mut gl_id = 0;
         glcall!(GenVertexArrays(1, &mut gl_id));
@@ -96,7 +98,7 @@ impl VertexArray {
             shared_context: support.get_shared_context(),
             uid: support.generate_id(),
             gl_id: gl_id,
-            attributes: attributes.into_iter().map(into_stored).collect(),
+            attributes: attributes.into_iter().map(|a| into_stored(a.borrow())).collect(),
             index_buffer: index_buffer.map(|b| get_base_buffer(b).clone()),
         };
         vertex_array.bind();
