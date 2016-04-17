@@ -1,7 +1,9 @@
 
 use std::cmp::{PartialEq, Eq};
 
-/// Helper alias
+pub type GlId = ::gl::types::GLuint;
+
+/// Helper alias, does not represent a GL id
 type IdValue = u32;
 
 /// Id helps identifying objects.

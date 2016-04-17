@@ -1,7 +1,7 @@
 
 use std::ffi::CString;
 use gl::types::{GLenum, GLint};
-use GlId;
+use id::GlId;
 use resource::ResourceCreationSupport;
 use ReglResult;
 use ReglError;

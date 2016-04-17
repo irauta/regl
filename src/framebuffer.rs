@@ -1,9 +1,8 @@
 
 use std::rc::Rc;
 use std::fmt::Debug;
-use id::{Id, GenerateId};
+use id::{Id, GenerateId, GlId};
 use ReglResult;
-use GlId;
 use tracker::BindIf;
 use resource::ResourceCreationSupport;
 

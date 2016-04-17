@@ -2,10 +2,9 @@
 use std::rc::Rc;
 use std::fmt::Debug;
 use gl::types::{GLenum, GLint};
-use id::{Id, GenerateId};
+use id::{Id, GenerateId, GlId};
 use ReglResult;
 use ReglError;
-use GlId;
 use tracker::BindIf;
 use resource::ResourceCreationSupport;
 use shader::{Shader, InternalShader};

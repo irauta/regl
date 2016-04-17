@@ -16,8 +16,6 @@ mod vertex_array;
 mod shader;
 mod program;
 
-type GlId = gl::types::GLuint;
-
 pub type ReglResult<T> = Result<T, ReglError>;
 
 
